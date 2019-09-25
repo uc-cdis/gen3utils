@@ -1,0 +1,21 @@
+---
+block:
+  arborist:
+    version:
+      min: '2.0.0'
+      max: '3.0.0'
+    has: deployment_version
+  hatchery:
+    has: sidecar
+  sower: 'true'
+  guppy: 'true'
+versions:
+- fence: '3.0.0'
+  arborist: '2.0.0'
+- indexd: '2.0.0'
+  fence: '3.0.0'
+- hatchery: "*"
+  wts: "*"
+  manifestservice: "*"
+- sower: "*"
+  guppy: "*"
