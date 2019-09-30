@@ -6,21 +6,20 @@ import logging
 
 from gen3utils.validate import validation
 
-# from validate_bak import blocks_validation,versions_validation
-
 logger = get_logger("cdismanifest", None, "info")
 logging.basicConfig()
 
 
 @click.group()
 def main():
-    """Utils for Gen3 commons user management."""
+    """Utils for Gen3 cdis-manifest management."""
 
 
 @main.command()
 @click.argument("manifest_files", type=str, nargs=-1, required=True)  #
 @click.argument("requirements_file", type=str, required=True)
 def validate(manifest_files, requirements_file):
+    """Validate one or more cdis-manifest FILES."""
 
     with open(requirements_file, "r") as f:
         requirements = yaml.safe_load(f.read())

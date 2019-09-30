@@ -9,11 +9,19 @@ logging.basicConfig()
 
 
 def validation(manifest, validation_requirement):
-    #remove services in avoid in validation_config which don't need validation 
-    for commons in validation_requirement['avoid']:
+    """
+    Runs all the validation checks against a manifest.json file.
+
+    Args:
+        manifest (str): Contents of manifest.json file.
+        validation_requirement (str): Contents of validation_config.yaml file.
+    """
+
+    # remove services in avoid in validation_config which don't need validation
+    for commons in validation_requirement["avoid"]:
         if manifest["global"].get("hostname") == commons:
-            remove_service = validation_requirement['avoid'][commons]
-            del manifest['versions'][remove_service]
+            remove_service = validation_requirement["avoid"][commons]
+            del manifest["versions"][remove_service]
     for r in validation_requirement:
         if r == "block":
             ok_b = blocks_validation(manifest, validation_requirement[r])
@@ -47,19 +55,25 @@ def assert_and_log(assertion_success, error_message):
 
 def blocks_validation(block_manifest, blocks_requirements):
     """
-        Arg:
-            block_manfiest: manfiest.json
-            blocs_requirements: the "block" requirement under validation_config.yaml
+    Validates blocks in cdis-manifest. 
+
+    Args:
+        block_manfiest: manfiest.json
+        blocs_requirements: the "block" requirement under validation_config.yaml
+
+    Return:
+        ok(bool): whether the validation succeeded.
     """
     ok = True
-    # logger.info('Validating block requirements')
 
     for service_block in blocks_requirements:
         if service_block in block_manifest["versions"]:
             # Validation for all services has requirement in validation_config.
             should_check_has = "has" in blocks_requirements[service_block]
             if "version" in blocks_requirements[service_block]:
-                # Version in manifest is equal or greater than verson in validation_config
+                # If we have version requirement for a service, min or max is required.
+                # min: Version in manifest is equal or greater than the verson in validation_config
+                # max: Version in manifest is smaller than the verson in validation_config
                 if (
                     "min" in blocks_requirements[service_block]["version"]
                     and "max" in blocks_requirements[service_block]["version"]
@@ -68,7 +82,7 @@ def blocks_validation(block_manifest, blocks_requirements):
                         manifest_version(block_manifest["versions"], service_block)
                         >= blocks_requirements[service_block]["version"]["min"]
                         and manifest_version(block_manifest["versions"], service_block)
-                        <= blocks_requirements[service_block]["version"]["max"]
+                        < blocks_requirements[service_block]["version"]["max"]
                     )
                 elif "min" in blocks_requirements[service_block]["version"]:
                     should_check_has = (
@@ -78,12 +92,11 @@ def blocks_validation(block_manifest, blocks_requirements):
                 elif "max" in blocks_requirements[service_block]["version"]:
                     should_check_has = (
                         manifest_version(block_manifest["versions"], service_block)
-                        <= blocks_requirements[service_block]["version"]["max"]
+                        < blocks_requirements[service_block]["version"]["max"]
                     )
 
             if should_check_has:
                 # Validation to check if a service has a specific key in its block in cdis-manfiest
-                # TODO better error msg
                 error_msg = (
                     blocks_requirements[service_block]["has"]
                     + " is missing in "
@@ -103,10 +116,11 @@ def blocks_validation(block_manifest, blocks_requirements):
                 )
 
             if blocks_requirements[service_block] == "true":
+                # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
                         service_block in block_manifest,
-                        service_block + " is missing in cdis-manifest",
+                        service_block + " block is missing in cdis-manifest",
                     )
                     and ok
                 )
@@ -131,53 +145,136 @@ def manifest_version(manifest_versions, services):
             return microservice_version
 
 
-def versions_validation(versions_manifest, versions_requirements):
+def versions_validation(manifest, versions_requirements):
     """
-        Arg:
-            versions_manifest: manfiest.json
-            versions_requirements: the "versions" requirement under validation_config.yaml
+    Validates versions in cdis-manifest 
+
+    Arg:
+        manifest: manfiest.json
+        versions_requirements: the "versions" requirement under validation_config.yaml
+
+    Return:
+        ok(bool): whether the validation succeeded.
     """
     ok = True
 
     for versions_requirement in versions_requirements:
         requirement_key_list = list(versions_requirement.keys())
         requirement_key = requirement_key_list[0]
-        if requirement_key in versions_manifest[
-            "versions"
-        ] and "_" not in manifest_version(
-            versions_manifest["versions"], requirement_key
+        if requirement_key in manifest["versions"] and "_" not in manifest_version(
+            manifest["versions"], requirement_key
         ):
-            """If the first service set to * under validation_config versions, 
-            other services under it should be present in the manifest """
+            # If the first service set to * under validation_config versions, other services should be in the manifest
             # The second condition is ignoring branch on sevice. WHICH IS NOT GOO. Added a warning in the log
             if (
                 versions_requirement[requirement_key] == "*"
-                and versions_manifest["global"].get("hostname")
-                != "qa-mickey.planx-pla.net"
+                and manifest["global"].get("hostname") != "qa-mickey.planx-pla.net"
             ):
                 for required_service in requirement_key_list[1:]:
                     ok = (
                         assert_and_log(
-                            required_service in versions_manifest["versions"],
+                            required_service in manifest["versions"],
                             required_service + " is missing in manifest.json",
                         )
                         and ok
                     )
 
-            # If the first service set to a specific version in config,others services should matches the required version.
-            elif versions_requirement[requirement_key] <= manifest_version(
-                versions_manifest["versions"], requirement_key
+            elif (
+                "min"
+                and "max" not in versions_requirement[requirement_key]
+                and versions_requirement[requirement_key]
+                <= manifest_version(manifest["versions"], requirement_key)
             ):
-                for required_service in requirement_key_list[1:]:
-                    ok = (
-                        assert_and_log(
-                            versions_requirement[required_service]
-                            <= manifest_version(
-                                versions_manifest["versions"], required_service
-                            ),
-                            required_service
-                            + " version is not as expected in manifest",
-                        )
-                        and ok
+                # If the first service set to a specific version in validation_config, other services should matches the version requirements
+                ok = (
+                    version_requirement_validation(
+                        versions_requirement, requirement_key_list, manifest["versions"]
                     )
+                    and ok
+                )
+            #                for required_service in requirement_key_list[1:]:
+            #                    ok = (
+            #                        assert_and_log(
+            #                            versions_requirement[required_service]
+            #                            <= manifest_version(
+            #                                manifest["versions"], required_service
+            #                            ),
+            #                            required_service
+            #                            + " version is not as expected in manifest",
+            #                        )
+            #                        and ok
+            #                    )
+            elif (
+                "min"
+                and "max" in versions_requirement[requirement_key]
+                and versions_requirement[requirement_key]["min"]
+                <= manifest_version(manifest["versions"], requirement_key)
+                < versions_requirement[requirement_key]["max"]
+            ):
+                # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
+                ok = (
+                    version_requirement_validation(
+                        versions_requirement, requirement_key_list, manifest["versions"]
+                    )
+                    and ok
+                )
+
+    #                for required_service in requirement_key_list[1:]:
+    #                    ok = (
+    #                        assert_and_log(
+    #                            versions_requirement[required_service]["min"]
+    #                            <= manifest_version(
+    #                                manifest["versions"], required_service
+    #                            )
+    #                            < versions_requirement[required_service]["max"],
+    #                            required_service
+    #                            + " version is not as expected in manifest",
+    #                        )
+    #                        and ok
+    #                    )
+
+    return ok
+
+
+def version_requirement_validation(
+    service_requirement, requirement_key_list, versions_manifest
+):
+    """
+    Validates version matches the requirement for a specific service 
+
+    Args:
+    service_requirement: service name and its version requirement 
+    requirement_key_list: list of service name which need validation 
+    versions_manfiest: versions block from manifest
+
+    Return:
+        ok(bool): whether the validation succeeded. 
+    """
+    ok = True
+
+    for required_service in requirement_key_list[1:]:
+        if "min" and "max" not in service_requirement[required_service]:
+            ok = (
+                assert_and_log(
+                    service_requirement[required_service]
+                    <= manifest_version(versions_manifest, required_service),
+                    required_service + " version is not as expected in manifest",
+                )
+                and ok
+            )
+        elif "min" and "max" in service_requirement[required_service]:
+            #            print('2222222222')
+            #            print('min')
+            #            print(service_requirement[required_service]["min"])
+            #            print('max')
+            #            print(service_requirement[required_service]["max"])
+            ok = (
+                assert_and_log(
+                    service_requirement[required_service]["min"]
+                    <= manifest_version(versions_manifest, required_service)
+                    < service_requirement[required_service]["max"],
+                    required_service + " version is not as expected in manifest",
+                )
+                and ok
+            )
     return ok
