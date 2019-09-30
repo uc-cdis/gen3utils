@@ -23,10 +23,18 @@ versions:
   #centralized auth 
 - fence: '3.0.0'
   arborist: '2.0.0'
+  #fence higher than 4.6.0 requries arborsit higher than 2.3.0
+  #synapse integration
+- fence: '4.6.0'
+  arborist: '2.3.0'
   #indexed higher than 2.0.0 requires fence higher than 2.0.0
   #centralized auth
 - indexd: '2.0.0'
   fence: '3.0.0'
+  #peregrine:2.0.0 needs arborist higher than 2.2.1
+  #peregrine integration with arborist needs arborist endpoint /auth/mapping
+- peregrine: '2.0.0'
+  arborist: '2.1.0'
   #hatchery requires wts and manifestservice 
 - hatchery: "*"
   wts: "*"
