@@ -9,6 +9,11 @@ logging.basicConfig()
 
 
 def validation(manifest, validation_requirement):
+    #remove services in avoid in validation_config which don't need validation 
+    for commons in validation_requirement['avoid']:
+        if manifest["global"].get("hostname") == commons:
+            remove_service = validation_requirement['avoid'][commons]
+            del manifest['versions'][remove_service]
     for r in validation_requirement:
         if r == "block":
             ok_b = blocks_validation(manifest, validation_requirement[r])
@@ -42,10 +47,10 @@ def assert_and_log(assertion_success, error_message):
 
 def blocks_validation(block_manifest, blocks_requirements):
     """
-		Arg:
-			block_manfiest: manfiest.json
-			blocs_requirements: the "block" requirement under validation_config.yaml
-	"""
+        Arg:
+            block_manfiest: manfiest.json
+            blocs_requirements: the "block" requirement under validation_config.yaml
+    """
     ok = True
     # logger.info('Validating block requirements')
 
@@ -110,12 +115,12 @@ def blocks_validation(block_manifest, blocks_requirements):
 
 def manifest_version(manifest_versions, services):
     """
-		Arg: 
-			services:microservice name
-			manifest_versions: the versions block from manifest.json
-		Return:
-		 	microservice version
-	"""
+        Arg: 
+            services:microservice name
+            manifest_versions: the versions block from manifest.json
+        Return:
+            microservice version
+    """
     for manifest_version in manifest_versions:
         if manifest_version == services:
             # if this fails, make sure you check the service is in the manifest before
@@ -128,11 +133,10 @@ def manifest_version(manifest_versions, services):
 
 def versions_validation(versions_manifest, versions_requirements):
     """
-		Arg:
-			versions_manifest: manfiest.json
-			versions_requirements: the "versions" requirement under validation_config.yaml
-
-	"""
+        Arg:
+            versions_manifest: manfiest.json
+            versions_requirements: the "versions" requirement under validation_config.yaml
+    """
     ok = True
 
     for versions_requirement in versions_requirements:
@@ -144,7 +148,7 @@ def versions_validation(versions_manifest, versions_requirements):
             versions_manifest["versions"], requirement_key
         ):
             """If the first service set to * under validation_config versions, 
-			other services under it should be present in the manifest """
+            other services under it should be present in the manifest """
             # The second condition is ignoring branch on sevice. WHICH IS NOT GOO. Added a warning in the log
             if (
                 versions_requirement[requirement_key] == "*"

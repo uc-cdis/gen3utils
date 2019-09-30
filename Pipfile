@@ -4,15 +4,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-codacy-coverage = "*"
-pytest = "~=3.2"
-pytest-cov = "~=2.5"
-truffleHog = "*"
-PyGithub = "*"
-gen3git = "*"
+
 
 [packages]
 gen3utils = {editable = true,path = "."}
 
 [requires]
-python_version = "y"
+python_version = "3.6"

@@ -1,21 +1,36 @@
----
+#The commons and the microservice which doesn't need validation. 
+avoid:
+  qa-mickey.planx-pla.net: 'sower'
+#Validation for particular microserivce which has block requirement in cdis-manifest
 block:
+  #Arborist higher than 2.0.0 requiresarborist block has deployment_version
+  #The version should contains at least min or max. 
   arborist:
     version:
       min: '2.0.0'
-      max: '3.0.0'
+      #max: '3.0.0'
     has: deployment_version
+  #hatchery requires hatchery block has sidecar
   hatchery:
     has: sidecar
+  #sower requires a sower block
   sower: 'true'
+  #guppy requires a guppy block
   guppy: 'true'
+#Validation for microservice in cdis-manifest versions
 versions:
+  #fence higher than 3.0.0 requries arborsit higher than 2.0.0
+  #centralized auth 
 - fence: '3.0.0'
   arborist: '2.0.0'
+  #indexed higher than 2.0.0 requires fence higher than 2.0.0
+  #centralized auth
 - indexd: '2.0.0'
   fence: '3.0.0'
+  #hatchery requires wts and manifestservice 
 - hatchery: "*"
   wts: "*"
   manifestservice: "*"
+  #sower requires guppy 
 - sower: "*"
   guppy: "*"

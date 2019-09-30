@@ -4,7 +4,7 @@ import click
 import yaml
 import logging
 
-from validate import validation
+from gen3utils.validate import validation
 
 # from validate_bak import blocks_validation,versions_validation
 

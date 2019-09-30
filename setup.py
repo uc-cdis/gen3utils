@@ -23,15 +23,21 @@ def get_version():
             "from GitHub and make sure that the git CLI is available."
         )
 
+def get_readme():
+    with open("README.md", "r") as f:
+        return f.read()
+
 
 setup(
     name="gen3utils",
     version=get_version(),
     description="Gen3 Library Template",
+    long_description=get_readme(),
+    long_description_content_type="text/markdown",
     url="https://github.com/uc-cdis/gen3utils",
     license="Apache",
-    packages=find_packages(),
-    install_requires=[
-        "cdiserrors~=0.1",
-    ],
+    packages=["gen3utils"],
+    include_package_data=True,  # include non-code files from MANIFEST.in
+    install_requires=["PyYAML~=5.1", "click", "cdislogging~=1.0.0"],
+    entry_points={"console_scripts": ["gen3utils=gen3utils.main:main"]},
 )
