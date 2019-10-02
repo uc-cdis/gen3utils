@@ -9,6 +9,10 @@ install:
 - pip install pipenv
 - pipenv install --dev --deploy
 - pipenv graph
+script:
+- pipenv run pytest -vv --cov=gen3utils --cov-report xml ./tests
+after_script:
+- pipenv run python-codacy-coverage -r coverage.xml
 before_deploy:
 - sed -i.bak "s/=get_version()/='$TRAVIS_TAG'/g" setup.py
 - cat setup.py
