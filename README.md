@@ -9,4 +9,4 @@ pip install gen3utils
 gen3utils validate manifest.json validation_config.yaml
 ```
 
-Validation requirement details are under gen3utils/gen3utils/validation_config.yaml
+The validation settings can be updated by modifying [this file](gen3utils/validation_config.yaml).
