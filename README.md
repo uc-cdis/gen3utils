@@ -3,7 +3,7 @@ Utils for Gen3 commons management
 
 ## manifest.json validation
 
-Validate a `manifest.json` file using the CLI:
+Validate one or more `manifest.json` files using the CLI:
 ```
 pip install gen3utils
 gen3utils validate manifest.json validation_config.yaml
