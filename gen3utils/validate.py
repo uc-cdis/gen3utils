@@ -8,7 +8,7 @@ logger = get_logger("cdismanifest")
 logging.basicConfig()
 
 
-def validation(manifest, validation_requirement):
+def validate_manifest(manifest, validation_requirement):
     """
     Runs all the validation checks against a manifest.json file.
 
