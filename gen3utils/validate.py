@@ -13,7 +13,7 @@ def validate_manifest(manifest, validation_requirement):
     Runs all the validation checks against a manifest.json file.
 
     Args:
-        manifest (str): Contents of manifest.json file.
+        manifest (dict): Contents of manifest.json file.
         validation_requirement (str): Contents of validation_config.yaml file.
     """
 
