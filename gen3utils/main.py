@@ -19,7 +19,7 @@ def main():
 @click.argument("manifest_files", type=str, nargs=-1, required=True)  #
 @click.argument("requirements_file", type=str, required=True)
 def validate(manifest_files, requirements_file):
-    """Validate one or more cdis-manifest FILES."""
+    """Validate one or more MANIFEST_FILES against a REQUIREMENTS_FILE."""
 
     with open(requirements_file, "r") as f:
         requirements = yaml.safe_load(f.read())
