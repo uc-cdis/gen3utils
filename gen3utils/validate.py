@@ -14,7 +14,7 @@ def validate_manifest(manifest, validation_requirement):
 
     Args:
         manifest (dict): Contents of manifest.json file.
-        validation_requirement (str): Contents of validation_config.yaml file.
+        validation_requirement (dict): Contents of validation_config.yaml file.
     """
 
     # remove services in avoid in validation_config which don't need validation
