@@ -4,7 +4,7 @@ avoid:
 
 #Validation for the manifest blocks required by some services
 block:
-  #Arborist higher than 2.0.0 requiresarborist block has deployment_version
+  #Arborist higher than 2.0.0 requires arborist block to have deployment_version
   #The version should contains at least min or max.
   #max is < not <=. min is >=
   arborist:
