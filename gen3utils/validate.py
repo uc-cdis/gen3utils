@@ -160,16 +160,21 @@ def versions_validation(manifest, versions_requirements):
     ok = True
 
     for versions_requirement in versions_requirements:
-        requirement_key_list = list(versions_requirement.keys())
-        print('!!!!requirement_key_list' + requirement_key_list)
-        requirement_key = requirement_key_list[0]
-        if requirement_key in manifest["versions"] and "_" not in manifest_version(
-            manifest["versions"], requirement_key
+        
+        requirement_list = versions_requirement["needs"]
+        requirement_key_list = list(requirement_list.keys())
+        requirement_key = list(versions_requirement)[0]
+        requirement_version = manifest_version(manifest["versions"], requirement_key)
+
+        if (
+            requirement_key in manifest["versions"]
+            and "_" not in requirement_version
+            and requirement_version != "master"
         ):
             # If the first service set to * under validation_config versions, other services should be in the manifest
             # The second condition is ignoring branch on sevice. WHICH IS NOT GOO. Added a warning in the log
             if versions_requirement[requirement_key] == "*":
-                for required_service in requirement_key_list[1:]:
+                for required_service in requirement_key_list:
                     ok = (
                         assert_and_log(
                             required_service in manifest["versions"],
@@ -187,7 +192,7 @@ def versions_validation(manifest, versions_requirements):
                 # If the first service set to a specific version in validation_config, other services should matches the version requirements
                 ok = (
                     version_requirement_validation(
-                        versions_requirement, requirement_key_list, manifest["versions"]
+                        requirement_list, requirement_key_list, manifest["versions"]
                     )
                     and ok
                 )
@@ -201,7 +206,7 @@ def versions_validation(manifest, versions_requirements):
                 # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
                 ok = (
                     version_requirement_validation(
-                        versions_requirement, requirement_key_list, manifest["versions"]
+                        requirement_list, requirement_key_list, manifest["versions"]
                     )
                     and ok
                 )
