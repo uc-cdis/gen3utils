@@ -71,28 +71,37 @@ def blocks_validation(block_manifest, blocks_requirements):
         if service_block in block_manifest["versions"]:
             # Validation for all services has requirement in validation_config.
             should_check_has = "has" in blocks_requirements[service_block]
-            if "version" in blocks_requirements[service_block]:
+            block_requirement_version = manifest_version(
+                block_manifest["versions"], service_block
+            )
+            if (
+                "version" in blocks_requirements[service_block]
+                and "_" not in block_requirement_version
+                and block_requirement_version != "master"
+            ):
                 # If we have version requirement for a service, min or max is required.
+                # We are not validating branch or master branch
                 # min: Version in manifest is equal or greater than the verson in validation_config
                 # max: Version in manifest is smaller than the verson in validation_config
+
                 if (
                     "min" in blocks_requirements[service_block]["version"]
                     and "max" in blocks_requirements[service_block]["version"]
                 ):
                     should_check_has = (
-                        manifest_version(block_manifest["versions"], service_block)
+                        block_requirement_version
                         >= blocks_requirements[service_block]["version"]["min"]
-                        and manifest_version(block_manifest["versions"], service_block)
+                        and block_requirement_version
                         < blocks_requirements[service_block]["version"]["max"]
                     )
                 elif "min" in blocks_requirements[service_block]["version"]:
                     should_check_has = (
-                        manifest_version(block_manifest["versions"], service_block)
+                        block_requirement_version
                         >= blocks_requirements[service_block]["version"]["min"]
                     )
                 elif "max" in blocks_requirements[service_block]["version"]:
                     should_check_has = (
-                        manifest_version(block_manifest["versions"], service_block)
+                        block_requirement_version
                         < blocks_requirements[service_block]["version"]["max"]
                     )
 
@@ -160,7 +169,7 @@ def versions_validation(manifest, versions_requirements):
     ok = True
 
     for versions_requirement in versions_requirements:
-        
+
         requirement_list = versions_requirement["needs"]
         requirement_key_list = list(requirement_list.keys())
         requirement_key = list(versions_requirement)[0]
