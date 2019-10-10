@@ -1,6 +1,7 @@
 from cdislogging import get_logger
 import json
 import click
+import os
 import yaml
 import logging
 
@@ -10,6 +11,9 @@ logger = get_logger("cdismanifest", None, "info")
 logging.basicConfig()
 
 
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
@@ -17,10 +21,11 @@ def main():
 
 @main.command()
 @click.argument("manifest_files", type=str, nargs=-1, required=True)  #
-@click.argument("requirements_file", type=str, required=True)
+# @click.argument("requirements_file", type=str, required=True)
 def validate(manifest_files, requirements_file):
     """Validate one or more MANIFEST_FILES against a REQUIREMENTS_FILE."""
 
+    requirements_file = os.path.join(CURRENT_DIR, "validation_config.yaml")
     with open(requirements_file, "r") as f:
         requirements = yaml.safe_load(f.read())
 

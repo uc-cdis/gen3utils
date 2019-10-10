@@ -139,7 +139,7 @@ def manifest_version(manifest_versions, service):
     """
     Get the service version from cdis-manifest
         Arg: 
-            service:microservice name
+            service: microservice name
             manifest_versions: the versions block from manifest.json
         Return:
             microservice version
@@ -155,12 +155,12 @@ def manifest_version(manifest_versions, service):
             return service_version
 
 
-def versions_validation(manifest, versions_requirements):
+def versions_validation(manifest_versions, versions_requirements):
     """
     Validates versions in cdis-manifest 
 
     Arg:
-        manifest: manfiest.json
+        manifest_versions: manifest.json "versions" seciotn
         versions_requirements: the "versions" requirement under validation_config.yaml
 
     Return:
@@ -173,10 +173,10 @@ def versions_validation(manifest, versions_requirements):
         requirement_list = versions_requirement["needs"]
         requirement_key_list = list(requirement_list.keys())
         requirement_key = list(versions_requirement)[0]
-        requirement_version = manifest_version(manifest["versions"], requirement_key)
+        requirement_version = manifest_version(manifest_versions, requirement_key)
 
         if (
-            requirement_key in manifest["versions"]
+            requirement_key in manifest_versions
             and "_" not in requirement_version
             and requirement_version != "master"
         ):
@@ -186,7 +186,7 @@ def versions_validation(manifest, versions_requirements):
                 for required_service in requirement_key_list:
                     ok = (
                         assert_and_log(
-                            required_service in manifest["versions"],
+                            required_service in manifest_versions,
                             required_service + " is missing in manifest.json",
                         )
                         and ok
@@ -196,12 +196,12 @@ def versions_validation(manifest, versions_requirements):
                 "min" not in versions_requirement[requirement_key]
                 and "max" not in versions_requirement[requirement_key]
                 and versions_requirement[requirement_key]
-                <= manifest_version(manifest["versions"], requirement_key)
+                <= manifest_version(manifest_versions, requirement_key)
             ):
                 # If the first service set to a specific version in validation_config, other services should matches the version requirements
                 ok = (
                     version_requirement_validation(
-                        requirement_list, requirement_key_list, manifest["versions"]
+                        requirement_list, requirement_key_list, manifest_versions
                     )
                     and ok
                 )
@@ -209,13 +209,13 @@ def versions_validation(manifest, versions_requirements):
                 "min" in versions_requirement[requirement_key]
                 and "max" in versions_requirement[requirement_key]
                 and versions_requirement[requirement_key]["min"]
-                <= manifest_version(manifest["versions"], requirement_key)
+                <= manifest_version(manifest_versions, requirement_key)
                 < versions_requirement[requirement_key]["max"]
             ):
                 # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
                 ok = (
                     version_requirement_validation(
-                        requirement_list, requirement_key_list, manifest["versions"]
+                        requirement_list, requirement_key_list, manifest_versions
                     )
                     and ok
                 )
