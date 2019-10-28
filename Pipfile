@@ -9,7 +9,7 @@ pytest-cov = "*"
 codacy-coverage = "*"
 
 [packages]
-gen3utils = {editable = true,path = "."}
+gen3utils = {editable = true,extras = ["s3", "validate"],path = "."}
 
 [requires]
 python_version = "3.6"

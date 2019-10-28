@@ -5,8 +5,9 @@ helps with installation.
 More info on various arguments here:
 https://setuptools.readthedocs.io/en/latest/setuptools.html
 """
-from setuptools import setup, find_packages
 from subprocess import check_output
+
+from setuptools import setup
 
 
 def get_version():
@@ -39,6 +40,13 @@ setup(
     license="Apache",
     packages=["gen3utils"],
     include_package_data=True,  # include non-code files from MANIFEST.in
-    install_requires=["PyYAML~=5.1", "click", "cdislogging~=1.0.0"],
-    entry_points={"console_scripts": ["gen3utils=gen3utils.main:main"]},
+    install_requires=["click", "cdislogging~=1.0.0"],
+    entry_points={
+        "console_scripts": ["gen3utils = gen3utils.main:main"],
+        "gen3utils.commands": [
+            "s3log = gen3utils.s3log [s3]",
+            "validate = gen3utils.validate [validate]",
+        ],
+    },
+    extras_require={"s3": ["aiobotocore"], "validate": ["PyYAML~=5.1"]},
 )
