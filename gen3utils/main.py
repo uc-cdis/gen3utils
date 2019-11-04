@@ -5,7 +5,7 @@ import os
 import yaml
 import logging
 
-from gen3utils.validate import validation
+from gen3utils.validate import validate_manifest
 
 logger = get_logger("cdismanifest", None, "info")
 logging.basicConfig()
@@ -22,7 +22,7 @@ def main():
 @main.command()
 @click.argument("manifest_files", type=str, nargs=-1, required=True)  #
 # @click.argument("requirements_file", type=str, required=True)
-def validate(manifest_files, requirements_file):
+def validate(manifest_files):
     """Validate one or more MANIFEST_FILES against a REQUIREMENTS_FILE."""
 
     requirements_file = os.path.join(CURRENT_DIR, "validation_config.yaml")
@@ -35,7 +35,7 @@ def validate(manifest_files, requirements_file):
         try:
             with open(f_name, "r") as f:
                 cdis_manifest = json.loads(f.read())
-            validation(cdis_manifest, requirements)
+            validate_manifest(cdis_manifest, requirements)
         except Exception as e:
             logger.error("{}: {}".format(type(e).__name__, e))
             failed_validation = True

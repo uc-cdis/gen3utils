@@ -27,7 +27,7 @@ def validate_manifest(manifest, validation_requirement):
         if r == "block":
             ok_b = blocks_validation(manifest, validation_requirement[r])
         elif r == "versions":
-            ok_v = versions_validation(manifest, validation_requirement[r])
+            ok_v = versions_validation(manifest["versions"], validation_requirement[r])
 
     if not ok_b or not ok_v:
         raise AssertionError(
@@ -160,7 +160,7 @@ def versions_validation(manifest_versions, versions_requirements):
     Validates versions in cdis-manifest 
 
     Arg:
-        manifest_versions: manifest.json "versions" seciotn
+        manifest_versions: manifest.json "versions" section
         versions_requirements: the "versions" requirement under validation_config.yaml
 
     Return:
@@ -239,7 +239,7 @@ def version_requirement_validation(
     """
     ok = True
 
-    for required_service in requirement_key_list[1:]:
+    for required_service in requirement_key_list[0:]:
         if (
             "min" not in service_requirement[required_service]
             and "max" not in service_requirement[required_service]
