@@ -13,3 +13,5 @@ gen3utils = {editable = true,path = "."}
 
 [requires]
 python_version = "3.6"
+dictionaryutils = "2.0.7"
+pyyaml = ">=5.1"
