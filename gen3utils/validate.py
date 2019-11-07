@@ -32,10 +32,12 @@ def validate_manifest(manifest, validation_requirement):
         if key == "block":
             ok = validate_manifest_block(manifest, requirements) and ok
         elif key == "versions":
-            ok = versions_validation(manifest, requirements) and ok
+            ok = versions_validation(manifest["versions"], requirements) and ok
+        elif key == "avoid":
+            pass  # handle that later
         else:
             logger.error(
-                'Skipping requirement block {} because it is not "block" or "versions"'.format(
+                'Skipping requirement block {} because it is not "avoid", "block" or "versions"'.format(
                     key
                 )
             )
