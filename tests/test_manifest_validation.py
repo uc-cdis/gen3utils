@@ -56,7 +56,7 @@ def test_versions_validation_needs(validation_config):
         "guppy": "quay.io/cdis/guppy:0.3.0",
     }
     ok = versions_validation(versions_block, validation_config["versions"])
-    assert ok, "sower + guppy should not pass validation"
+    assert ok, "sower + guppy should pass validation"
 
     versions_block = {"sower": "quay.io/cdis/sower:0.3.0"}
     ok = versions_validation(versions_block, validation_config["versions"])
