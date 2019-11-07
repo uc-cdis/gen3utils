@@ -1,8 +1,11 @@
-from cdislogging import get_logger
-import json
 import click
-import yaml
+import json
 import logging
+import re
+import yaml
+
+from cdislogging import get_logger
+
 
 logger = get_logger("cdismanifest")
 logging.basicConfig()
@@ -84,11 +87,7 @@ def validate_manifest_block(manifest, blocks_requirements):
             block_requirement_version = manifest_version(
                 manifest["versions"], service_name
             )
-            if (
-                "version" in block
-                and "_" not in block_requirement_version
-                and block_requirement_version != "master"
-            ):
+            if "version" in block and not version_is_branch(block_requirement_version):
                 # If we have version requirement for a service, min or max is required.
                 # We are not validating branch or master branch
                 # min: Version in manifest is equal or greater than the verson in validation_config
@@ -150,9 +149,21 @@ def manifest_version(manifest_versions, service):
             # calling manifest_version()! it should never happen
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
-            if "_" in service_version or service_version == "master":
+            if version_is_branch(service_version):
                 logger.warning(service + " is on branch or master, we can't validate")
             return service_version
+
+
+def version_is_branch(version):
+    """
+    Args:
+        version (string)
+
+    Returns:
+        bool: True if version only contains digits and dots
+    """
+    reg = re.compile("^[0-9]+(.[0-9]+)*$")
+    return not bool(reg.match(version))
 
 
 def versions_validation(manifest_versions, versions_requirements):
@@ -175,10 +186,8 @@ def versions_validation(manifest_versions, versions_requirements):
         requirement_key = list(versions_requirement)[0]
         requirement_version = manifest_version(manifest_versions, requirement_key)
 
-        if (
-            requirement_key in manifest_versions
-            and "_" not in requirement_version
-            and requirement_version != "master"
+        if requirement_key in manifest_versions and not version_is_branch(
+            requirement_version
         ):
             # If the first service set to * under validation_config versions, other services should be in the manifest
             # The second condition is ignoring branch on sevice. WHICH IS NOT GOO. Added a warning in the log

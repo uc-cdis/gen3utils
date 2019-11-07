@@ -2,6 +2,7 @@ from gen3utils.validate import (
     validate_manifest_block,
     versions_validation,
     manifest_version,
+    version_is_branch,
 )
 
 
@@ -20,6 +21,12 @@ def test_manifest_version():
 
     fence_version = manifest_version(versions_block, "fence")
     assert fence_version == "feat_mybranch"
+
+
+def test_service_is_on_branch():
+    assert version_is_branch("master")
+    assert version_is_branch("feat_new-thing")
+    assert not version_is_branch("1.2.14.8")
 
 
 def test_versions_validation_needs(validation_config):
