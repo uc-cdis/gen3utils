@@ -20,12 +20,13 @@ def validate_manifest(manifest, validation_requirement):
     # remove services in avoid in validation_config which don't need validation
     hostname = manifest["global"].get("hostname")
     if hostname in validation_requirement.get("avoid", []):
-        service_to_skip = validation_requirement["avoid"][hostname]
-        del manifest["versions"][service_to_skip]
+        services_to_skip = validation_requirement["avoid"][hostname]
+        for s in services_to_skip:
+            del manifest["versions"][s]
 
     for r in validation_requirement:
         if r == "block":
-            ok_b = blocks_validation(manifest, validation_requirement[r])
+            ok_b = validate_manifest_block(manifest, validation_requirement[r])
         elif r == "versions":
             ok_v = versions_validation(manifest["versions"], validation_requirement[r])
 
@@ -68,11 +69,11 @@ def validate_manifest_block(manifest, blocks_requirements):
     ok = True
 
     for service_block in blocks_requirements:
-        if service_block in block_manifest["versions"]:
+        if service_block in manifest["versions"]:
             # Validation for all services has requirement in validation_config.
             should_check_has = "has" in blocks_requirements[service_block]
             block_requirement_version = manifest_version(
-                block_manifest["versions"], service_block
+                manifest["versions"], service_block
             )
             if (
                 "version" in blocks_requirements[service_block]
@@ -115,9 +116,9 @@ def validate_manifest_block(manifest, blocks_requirements):
 
                 ok = (
                     assert_and_log(
-                        service_block in block_manifest
+                        service_block in manifest
                         and blocks_requirements[service_block]["has"]
-                        in block_manifest[service_block],
+                        in manifest[service_block],
                         error_msg,
                     )
                     and ok
@@ -127,7 +128,7 @@ def validate_manifest_block(manifest, blocks_requirements):
                 # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
-                        service_block in block_manifest,
+                        service_block in manifest,
                         service_block + " block is missing in cdis-manifest",
                     )
                     and ok

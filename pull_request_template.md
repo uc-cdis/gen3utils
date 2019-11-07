@@ -4,11 +4,9 @@ before asking for review.
 --->
 
 - [ ] Describe what this pull request does.
-- [ ] Make sure all tests pass.
-- [ ] Maintain or increase test coverage.
-- [ ] Black the code.
+- [ ] Maintain or increase test coverage (if relevant).
 - [ ] Test manually.
-- [ ] Remove empty sections below.
+- [ ] Update documentation or justify if not needed.
 
 ### New Features
 - Implemented XXX

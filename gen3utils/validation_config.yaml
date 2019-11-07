@@ -1,12 +1,13 @@
 #The commons and the microservice which doesn't need validation. 
 avoid:
-  qa-mickey.planx-pla.net: 'sower'
+  qa-mickey.planx-pla.net:
+  - 'sower'
 
 #Validation for the manifest blocks required by some services
+# /!\ max is < not <=. min is >=
 block:
   #Arborist higher than 2.0.0 requires arborist block to have deployment_version
   #The version should contains at least min or max.
-  #max is < not <=. min is >=
   arborist:
     version:
       min: '2.0.0'
@@ -21,6 +22,7 @@ block:
   guppy: 'true'
 
 #Validation for service couples that need matching versions
+# /!\ max is < not <=. min is >=
 versions:
   #fence higher than 3.0.0 requires arborist higher than 2.0.0
   #centralized auth 
@@ -35,7 +37,6 @@ versions:
   #Fence 4.4.x requires Arborist == 2.2.0
   #Arborist 2.2.0 adds the PUT /policy/{policyID} endpoint (but keeps the old one)
   #Arborist 2.2.1 PUT policy endpoints no longer implicitly upsert
-  #max is < not <=. min is >=
 - fence: 
     min: '4.4.0'
     max: '4.5.0'
