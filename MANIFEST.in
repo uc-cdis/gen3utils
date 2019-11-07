@@ -4,3 +4,5 @@ include Pipfile
 include Pipfile.lock
 include README.md
 include CHANGELOG.md
+
+include gen3utils/validation_config.yaml
