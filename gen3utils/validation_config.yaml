@@ -12,7 +12,7 @@ block:
       min: '2.0.0'
       #max: '3.0.0'
     has: deployment_version
-  #hatchery requires hatchery block has sidecar
+  #hatchery requires hatchery block to have sidecar
   hatchery:
     has: sidecar
   #sower requires a sower block
