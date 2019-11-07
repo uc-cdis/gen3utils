@@ -54,7 +54,7 @@ def assert_and_log(assertion_success, error_message):
     return assertion_success
 
 
-def blocks_validation(block_manifest, blocks_requirements):
+def validate_manifest_block(manifest, blocks_requirements):
     """
     Validates blocks in cdis-manifest. 
 
