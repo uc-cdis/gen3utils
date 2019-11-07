@@ -1,0 +1,65 @@
+#The commons and the microservice which doesn't need validation. 
+avoid:
+  qa-mickey.planx-pla.net:
+  - 'sower'
+
+#Validation for the manifest blocks required by some services
+# /!\ max is < not <=. min is >=
+block:
+  #Arborist higher than 2.0.0 requires arborist block to have deployment_version
+  #The version should contains at least min or max.
+  arborist:
+    version:
+      min: '2.0.0'
+      #max: '3.0.0'
+    has: deployment_version
+  #hatchery requires hatchery block to have sidecar
+  hatchery:
+    has: sidecar
+  #sower requires a sower block
+  sower: 'true'
+  #guppy requires a guppy block
+  guppy: 'true'
+
+#Validation for service couples that need matching versions
+# /!\ max is < not <=. min is >=
+versions:
+  #fence higher than 3.0.0 requires arborist higher than 2.0.0
+  #centralized auth 
+- fence: '3.0.0'
+  needs:
+    arborist: '2.0.0'
+  #fence higher than 4.6.0 requires arborist higher than 2.3.0
+  #synapse integration
+- fence: '4.6.0'
+  needs:
+    arborist: '2.3.0'
+  #Fence 4.4.x requires Arborist == 2.2.0
+  #Arborist 2.2.0 adds the PUT /policy/{policyID} endpoint (but keeps the old one)
+  #Arborist 2.2.1 PUT policy endpoints no longer implicitly upsert
+- fence: 
+    min: '4.4.0'
+    max: '4.5.0'
+  needs:
+    arborist:
+      min: '2.2.0'
+      max: '2.2.1'
+  #indexed higher than 2.0.0 requires fence higher than 2.0.0
+  #centralized auth
+- indexd: '2.0.0'
+  needs: 
+    fence: '3.0.0'
+  #peregrine:2.0.0 needs arborist higher than 2.2.1
+  #peregrine integration with arborist needs arborist endpoint /auth/mapping
+- peregrine: '2.0.0'
+  needs:
+    arborist: '2.1.0'
+  #hatchery requires wts and manifestservice 
+- hatchery: "*"
+  needs:
+    wts: "*"
+    manifestservice: "*"
+  #sower requires guppy 
+- sower: "*"
+  needs:
+    guppy: "*"

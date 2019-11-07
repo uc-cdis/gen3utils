@@ -1,0 +1,31 @@
+dist: xenial
+language: python
+python:
+- 3.6
+cache:
+- pip
+- apt
+install:
+- pip install pipenv
+- pipenv install --dev --deploy
+- pipenv graph
+script:
+- pipenv run pytest -vv --cov=gen3utils --cov-report xml ./tests
+after_script:
+- pipenv run python-codacy-coverage -r coverage.xml
+before_deploy:
+- sed -i.bak "s/=get_version()/='$TRAVIS_TAG'/g" setup.py
+- cat setup.py
+- if [ $(python setup.py --version) == '0.0.0' ]; then travis_terminate 1; fi
+deploy:
+  provider: pypi
+  user: uc-ctds
+  skip_existing: true
+  skip_cleanup: true
+  on:
+    repo: uc-cdis/gen3utils
+    tags: true
+  password:
+    secure: KFccIDJwLSbP5o5bi30ZddDMwWB6ORG59cr2YO0Fujgz8UKGGEiwBqXE8E+ExZ9W+1LICUkDBMUqxnr6/Du4JdDTYqUTqldfwyc00smU1LvJ2pheF5wPhlZUQs1Ri4OCFoDtzU897HuaaDvGD+qrXaj+w1t7ylH9u850Q9m9Gj5RAmblnRnXqX1aI78HwoA8osL5A3keDC6n2xIIHpX6q7/45D4BuFmDqAMcAWWrIKcls88xM+Ch6VY5rRnQtev3aR4swZIRFDfHoCMCIQg/MubDHmlnQVx9uoIILdFhDY+h/eFiVQjo2xEeEBKRvOfbMN2sAYvAeo3FdE9f4CssgJl5Eq+vRDj5pPpbo2yVaMwLK5HMBOcQoqr7ghLndLvV9sNIKg/LJ72kYjFsv8B3E32/qrL9F2BA6bYn8cn3c1ZvSdrj+R04FUCwYO042qN5RkvOeyEwrJbpaProFdBijuqadrUDiE6J3PM0XRJWI1BH+dsdgIE7NqMx0knHd58RQIelTY1XRpq/NLLzmqYZ+f5VWF9HLUPhRERgxdMZukgoBYAWL9K2dZ566vODPDjgdOVLYhrbN+9yZSCGan5yPyXDxJKt4G2HrjrXkq6Mc9UjwiXck6TcOYFjS+uPQQlwGHnjAsw/34Zf/7ImrOZB+p5D7lqKS1X4o0d/cahgnQg=
+after_deploy:
+- gen3git release
