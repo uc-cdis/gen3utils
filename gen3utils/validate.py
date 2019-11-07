@@ -24,18 +24,24 @@ def validate_manifest(manifest, validation_requirement):
         for s in services_to_skip:
             del manifest["versions"][s]
 
-    for r in validation_requirement:
-        if r == "block":
-            ok_b = validate_manifest_block(manifest, validation_requirement[r])
-        elif r == "versions":
-            ok_v = versions_validation(manifest["versions"], validation_requirement[r])
+    ok = True
+    for key, requirements in validation_requirement.items():
+        if key == "block":
+            ok = validate_manifest_block(manifest, requirements) and ok
+        elif key == "versions":
+            ok = versions_validation(manifest, requirements) and ok
+        else:
+            logger.error(
+                'Skipping requirement block {} because it is not "block" or "versions"'.format(
+                    key
+                )
+            )
 
-    if not ok_b or not ok_v:
+    if not ok:
         raise AssertionError(
             "cdis-manifest validation failed. See errors in previous logs."
         )
-    else:
-        logger.info("OK")
+    logger.info("OK")
 
 
 def assert_and_log(assertion_success, error_message):
@@ -60,23 +66,26 @@ def validate_manifest_block(manifest, blocks_requirements):
     Validates blocks in cdis-manifest. 
 
     Args:
-        block_manfiest: manfiest.json
-        blocs_requirements: the "block" requirement under validation_config.yaml
+        manifest (dict): Contents of manifest.json file.
+        blocks_requirements (dict): the "block" requirement under
+            validation_config.yaml. The keys of the dict are the service names
+            and the values are the requirements for the block associated to
+            the service.
 
     Return:
         ok(bool): whether the validation succeeded.
     """
     ok = True
 
-    for service_block in blocks_requirements:
-        if service_block in manifest["versions"]:
+    for service_name, block in blocks_requirements.items():
+        if service_name in manifest["versions"]:
             # Validation for all services has requirement in validation_config.
-            should_check_has = "has" in blocks_requirements[service_block]
+            should_check_has = "has" in block
             block_requirement_version = manifest_version(
-                manifest["versions"], service_block
+                manifest["versions"], service_name
             )
             if (
-                "version" in blocks_requirements[service_block]
+                "version" in block
                 and "_" not in block_requirement_version
                 and block_requirement_version != "master"
             ):
@@ -85,51 +94,41 @@ def validate_manifest_block(manifest, blocks_requirements):
                 # min: Version in manifest is equal or greater than the verson in validation_config
                 # max: Version in manifest is smaller than the verson in validation_config
 
-                if (
-                    "min" in blocks_requirements[service_block]["version"]
-                    and "max" in blocks_requirements[service_block]["version"]
-                ):
+                if "min" in block["version"] and "max" in block["version"]:
                     should_check_has = (
-                        block_requirement_version
-                        >= blocks_requirements[service_block]["version"]["min"]
-                        and block_requirement_version
-                        < blocks_requirements[service_block]["version"]["max"]
+                        block_requirement_version >= block["version"]["min"]
+                        and block_requirement_version < block["version"]["max"]
                     )
-                elif "min" in blocks_requirements[service_block]["version"]:
+                elif "min" in block["version"]:
                     should_check_has = (
-                        block_requirement_version
-                        >= blocks_requirements[service_block]["version"]["min"]
+                        block_requirement_version >= block["version"]["min"]
                     )
-                elif "max" in blocks_requirements[service_block]["version"]:
+                elif "max" in block["version"]:
                     should_check_has = (
-                        block_requirement_version
-                        < blocks_requirements[service_block]["version"]["max"]
+                        block_requirement_version < block["version"]["max"]
                     )
 
             if should_check_has:
                 # Validation to check if a service has a specific key in its block in cdis-manfiest
                 error_msg = "{} is missing in {} block or {} block is missing".format(
-                    blocks_requirements[service_block]["has"],
-                    service_block,
-                    service_block,
+                    block["has"], service_name, service_name
                 )
 
                 ok = (
                     assert_and_log(
-                        service_block in manifest
-                        and blocks_requirements[service_block]["has"]
-                        in manifest[service_block],
+                        service_name in manifest
+                        and block["has"] in manifest[service_name],
                         error_msg,
                     )
                     and ok
                 )
 
-            if blocks_requirements[service_block] == "true":
+            if block == "true":
                 # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
-                        service_block in manifest,
-                        service_block + " block is missing in cdis-manifest",
+                        service_name in manifest,
+                        service_name + " block is missing in cdis-manifest",
                     )
                     and ok
                 )
