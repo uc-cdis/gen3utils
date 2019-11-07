@@ -19,7 +19,8 @@ block:
   sower: 'true'
   #guppy requires a guppy block
   guppy: 'true'
-#Validation for microservice in cdis-manifest versions
+
+#Validation for service couples that need matching versions
 versions:
   #fence higher than 3.0.0 requries arborsit higher than 2.0.0
   #centralized auth 
