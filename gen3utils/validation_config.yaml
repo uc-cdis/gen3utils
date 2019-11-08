@@ -54,12 +54,22 @@ versions:
 - peregrine: '2.0.0'
   needs:
     arborist: '2.1.0'
-  #hatchery requires wts and manifestservice 
+  #hatchery requires wts, manifestservice and ambassador
 - hatchery: "*"
   needs:
     wts: "*"
     manifestservice: "*"
+    ambassador: "*"
   #sower requires guppy 
 - sower: "*"
   needs:
     guppy: "*"
+  #guppy requires aws-es-proxy 
+- guppy: "*"
+  needs:
+    aws-es-proxy: "*"
+  #tube requires spark and aws-es-proxy 
+- tube: "*"
+  needs:
+    spark: "*"
+    aws-es-proxy: "*"
