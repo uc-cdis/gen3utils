@@ -5,7 +5,7 @@ import os
 import yaml
 import logging
 
-from gen3utils.validate import validate_manifest
+from gen3utils.manifest.validate import validate_manifest
 
 logger = get_logger("cdismanifest", None, "info")
 logging.basicConfig()
@@ -20,12 +20,11 @@ def main():
 
 
 @main.command()
-@click.argument("manifest_files", type=str, nargs=-1, required=True)  #
-# @click.argument("requirements_file", type=str, required=True)
+@click.argument("manifest_files", type=str, nargs=-1, required=True)
 def validate(manifest_files):
     """Validate one or more MANIFEST_FILES against a REQUIREMENTS_FILE."""
 
-    requirements_file = os.path.join(CURRENT_DIR, "validation_config.yaml")
+    requirements_file = os.path.join(CURRENT_DIR, "manifest", "validation_config.yaml")
     with open(requirements_file, "r") as f:
         requirements = yaml.safe_load(f.read())
 

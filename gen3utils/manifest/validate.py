@@ -28,19 +28,15 @@ def validate_manifest(manifest, validation_requirement):
             del manifest["versions"][s]
 
     ok = True
-    for key, requirements in validation_requirement.items():
-        if key == "block":
-            ok = validate_manifest_block(manifest, requirements) and ok
-        elif key == "versions":
-            ok = versions_validation(manifest["versions"], requirements) and ok
-        elif key == "avoid":
-            pass  # handle that later
-        else:
-            logger.error(
-                'Skipping requirement block {} because it is not "avoid", "block" or "versions"'.format(
-                    key
-                )
+    if "block" in validation_requirement:
+        ok = validate_manifest_block(manifest, validation_requirement["block"]) and ok
+    if "versions" in validation_requirement:
+        ok = (
+            versions_validation(
+                manifest.get("versions"), validation_requirement["versions"]
             )
+            and ok
+        )
 
     if not ok:
         raise AssertionError(
@@ -152,7 +148,7 @@ def manifest_version(manifest_versions, service):
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version):
-                logger.warning(service + " is on branch or master, we can't validate")
+                logger.warning("  {} is on a branch: not validating".format(service))
             return service_version
 
 

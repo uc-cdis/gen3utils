@@ -1,4 +1,4 @@
-from gen3utils.validate import (
+from gen3utils.manifest.validate import (
     validate_manifest_block,
     versions_validation,
     manifest_version,
