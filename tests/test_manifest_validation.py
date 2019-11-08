@@ -62,12 +62,21 @@ def test_versions_validation_needs(validation_config):
     ok = versions_validation(versions_block, validation_config["versions"])
     assert not ok, "fence 4.4.4 + arborist 1.0.0 should not pass validation"
 
+    # test for chainning service dependencies
     versions_block = {
         "sower": "quay.io/cdis/sower:0.3.0",
         "guppy": "quay.io/cdis/guppy:0.3.0",
+        "aws-es-proxy": "abutaha/aws-es-proxy:0.8",
     }
     ok = versions_validation(versions_block, validation_config["versions"])
-    assert ok, "sower + guppy should pass validation"
+    assert ok, "sower + guppy + aws-es-proxy should pass validation"
+
+    versions_block = {
+        "sower": "quay.io/cdis/sower:0.3.0",
+        "guppy": "quay.io/cdis/guppy:0.3.0"
+    }
+    ok = versions_validation(versions_block, validation_config["versions"])
+    assert not ok, "sower + guppy should not pass validation"
 
     versions_block = {"sower": "quay.io/cdis/sower:0.3.0"}
     ok = versions_validation(versions_block, validation_config["versions"])
