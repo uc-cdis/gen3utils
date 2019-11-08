@@ -10,6 +10,7 @@ codacy-coverage = "*"
 
 [packages]
 gen3utils = {editable = true,path = "."}
+requests = "*"
 
 [requires]
 python_version = "3.6"
