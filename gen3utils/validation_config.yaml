@@ -58,7 +58,6 @@ versions:
 - hatchery: "*"
   needs:
     wts: "*"
-    manifestservice: "*"
     ambassador: "*"
   #sower requires guppy 
 - sower: "*"
