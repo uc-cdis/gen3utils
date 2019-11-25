@@ -36,7 +36,7 @@ def validate(manifest_files):
             with open(f_name, "r") as f:
                 cdis_manifest = json.loads(f.read())
             validate_manifest(cdis_manifest, requirements)
-        except Exception as e:
+        except AssertionError as e:
             logger.error("{}: {}".format(type(e).__name__, e))
             failed_validation = True
     if failed_validation:

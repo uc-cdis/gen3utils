@@ -48,6 +48,10 @@ def test_versions_validation_needs(validation_config):
     ok = versions_validation(versions_block, validation_config["versions"])
     assert not ok, "fence 4.6.1 + arborist 1.0.0 should not pass validation"
 
+    versions_block = {"fence": "quay.io/cdis/fence:4.6.1"}
+    ok = versions_validation(versions_block, validation_config["versions"])
+    assert not ok, "fence 4.6.1 + no arborist should not pass validation"
+
     versions_block = {
         "fence": "quay.io/cdis/fence:4.4.4",
         "arborist": "quay.io/cdis/arborist:2.2.0",
