@@ -11,3 +11,10 @@ def test_min_max(validation_config):
                     assert ("min" in need_details and "max" in need_details) or (
                         "min" not in need_details and "max" not in need_details
                     ), message.format(requirement)
+
+
+def test_description(validation_config):
+    for requirement in validation_config.get("versions"):
+        assert requirement.get(
+            "desc"
+        ), 'Missing description of requirement for "{}"'.format(requirement)
