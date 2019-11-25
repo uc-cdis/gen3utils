@@ -46,9 +46,9 @@ versions:
       max: '2.2.1'
   #indexed higher than 2.0.0 requires fence higher than 2.0.0
   #centralized auth
-- indexd: '2.0.0'
-  needs: 
-    fence: '3.0.0'
+# - indexd: '2.0.0'
+#   needs:
+#     fence: '3.0.0'
   #peregrine:2.0.0 needs arborist higher than 2.2.1
   #peregrine integration with arborist needs arborist endpoint /auth/mapping
 - peregrine: '2.0.0'
