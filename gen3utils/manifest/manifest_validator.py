@@ -7,7 +7,7 @@ import yaml
 from cdislogging import get_logger
 
 
-logger = get_logger("cdismanifest")
+logger = get_logger("validate-manifest")
 logging.basicConfig()
 
 
