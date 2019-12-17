@@ -25,6 +25,8 @@ block:
   # hatchery requires hatchery block to have sidecar
   hatchery:
     has: sidecar
+    # hatchery may be in its own hatchery.json file
+    optional: "true"
   # sower requires a sower block
   sower: "true"
   # guppy requires a guppy block
