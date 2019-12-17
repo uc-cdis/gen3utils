@@ -134,7 +134,7 @@ def test_validate_manifest_block(validation_config):
     ok = validate_manifest_block(block_requirement, validation_config["block"])
     assert (
         not ok
-    ), "hatchery without sidecar in hatchery blcok should not pass validation"
+    ), "hatchery without sidecar in hatchery block should not pass validation"
 
     block_requirement = {
         "versions": {"guppy": "quay.io/cdis/guppy:0.3.0"},
