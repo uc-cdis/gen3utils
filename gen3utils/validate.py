@@ -118,9 +118,9 @@ def validate_manifest_block(manifest, blocks_requirements):
                 ok = (
                     assert_and_log(
                         service_name in manifest
-                          and block["has"] in manifest[service_name]
-                          or service_name not in manifest
-                          and block.get("optional") == "true",
+                        and block["has"] in manifest[service_name]
+                        or service_name not in manifest
+                        and block.get("optional") == "true",
                         error_msg,
                     )
                     and ok
