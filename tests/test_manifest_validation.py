@@ -130,7 +130,10 @@ def test_validate_manifest_block(validation_config):
     ok = validate_manifest_block(block_requirement, validation_config["block"])
     assert ok, "hatchery with sidecar in hatchery blcok should pass validation"
 
-    block_requirement = {"versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"}}
+    block_requirement = {
+      "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"}, 
+      "hatchery": {}
+    }
     ok = validate_manifest_block(block_requirement, validation_config["block"])
     assert (
         not ok
