@@ -10,7 +10,7 @@ pip install gen3utils
 gen3utils validate_manifest cdis-manifest/*/manifest.json
 ```
 
-The validation settings can be updated by modifying [this file](gen3utils/validation_config.yaml).
+The validation settings can be updated by modifying [this file](gen3utils/manifest/validation_config.yaml).
 
 ## :construction: etlMapping.yaml validation :construction:
 
@@ -20,6 +20,14 @@ Validate an `etlMapping.yaml` file against the dictionary URL specified in a `ma
 ```
 pip install gen3utils
 gen3utils validate_etl_mapping etlMapping.yaml manifest.json
+```
+
+## Comment on a PR with any deployment changes when updating manifest services
+
+The command requires the name of the repository, the pull request number and **a `GITHUB_TOKEN` environment variable** containing a token with read and write access to the repository. It also comments a warning if a service is pinned on a branch.
+```
+pip install gen3utils
+gen3utils post_deployment_changes <username>/<repository> <pull request number>
 ```
 
 ## Dev test
