@@ -1,10 +1,12 @@
 from cdislogging import get_logger
 import json
 import click
+import logging
 import os
 import yaml
-import logging
+import sys
 
+from gen3utils.deployment_changes.post_changes import comment_deployment_changes_on_pr
 from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 
@@ -56,6 +58,22 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
         with open(etl_mapping_file, "r") as f2:
             etl_mappings = yaml.safe_load(f2.read()).get("mappings")
             val_etl_mapping(dictionary_url, etl_mappings)
+
+
+@main.command()
+@click.argument("repository", type=str, nargs=1, required=True)
+@click.argument("pull_request_number", type=int, nargs=1, required=True)
+def post_deployment_changes(repository, pull_request_number):
+    """
+    Comment on a pull request with any deployment changes when updating
+    manifest services. Also comment a warning if a service is on a branch.
+    """
+
+    if not "GH_TOKEN" in os.environ:
+        print("Exiting: Missing GH_TOKEN")
+        sys.exit(1)
+
+    comment_deployment_changes_on_pr(repository, pull_request_number)
 
 
 if __name__ == "__main__":
