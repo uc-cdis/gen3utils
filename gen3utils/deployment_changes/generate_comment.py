@@ -10,7 +10,7 @@ from gen3utils.manifest.manifest_validator import version_is_branch
 
 
 # whitelist of services to ignore when checking if services are on a branch
-IGNORE_SERVICE_ON_BRANCH = ["fluentd", "revproxy"]
+IGNORE_SERVICE_ON_BRANCH = ["revproxy", "jupyterhub"]
 
 
 logger = get_logger("comment-deployment-changes")
@@ -45,7 +45,6 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
     if not manifest_files:
         logger.info("No manifest files to check - exiting")
         return
-    manifest_files.extend(manifest_files)
 
     # for each modified manifest file, compare versions to master versions
     logger.info("Checking manifest files")
@@ -55,7 +54,6 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
         url = file_info["raw_url"]
         old_file, new_file = get_files(get_master_url(url), url, headers)
         new_versions_block = new_file.get("versions", {})
-        new_versions_block["fence"] = "a:bb"
         if old_file:
             old_versions_block = old_file.get("versions", {})
             deployment_changes = get_deployment_changes(
@@ -129,15 +127,24 @@ def compare_versions_blocks(old_versions_block, new_versions_block):
     for service in services:
         old_version = old_versions_block.get(service)
         new_version = new_versions_block.get(service)
-        if not old_version or not new_version:
-            # new service, or delete service: nothing to compare
+        if (
+            not old_version
+            or not new_version
+            or "quay.io/cdis" not in old_version
+            or "quay.io/cdis" not in new_version
+            or len(old_version.split(":")) < 2
+            or len(new_version.split(":")) < 2
+        ):
+            # new service, or deleted service: nothing to compare.
+            # non-CTDS repo: no deployment changes to get.
+            # version without ":" is not usable.
             continue
         old_version = old_version.split(":")[1]
         new_version = new_version.split(":")[1]
         if old_version != new_version:
             res[service] = {"old": old_version, "new": new_version}
 
-    logger.info(json.dumps(res, indent=2))
+    logger.info("Updates: ", json.dumps(res, indent=2))
     return res
 
 
@@ -164,13 +171,14 @@ def get_deployment_changes(versions_dict, token):
     res = {}
     for service, versions in versions_dict.items():
         # only get the deployment changes if the new version is more
-        # recent than the old version
+        # recent than the old version. ignore services on a branch
         if (
             not version_is_branch(versions["old"])
             and not version_is_branch(versions["new"])
             and versions["old"] < versions["new"]
         ):
-            args = Gen3GitArgs("uc-cdis/" + service, versions["old"], versions["new"])
+            repo_name = "data-portal" if service == "portal" else service
+            args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
             try:
                 release_notes = gen3git.main(args)
                 if not release_notes:
@@ -178,7 +186,9 @@ def get_deployment_changes(versions_dict, token):
             except:
                 logger.error("Unable to get release notes with gen3git:")
                 raise
-            res[service] = release_notes.get("deployment changes")
+            notes = release_notes.get("deployment changes")
+            if notes:
+                res[service] = notes
     return res
 
 
@@ -188,13 +198,19 @@ def check_services_on_branch(versions_block):
     """
     services_on_branch = []
     for service in versions_block:
-        version = versions_block.get(service).split(":")[1]
+        version = versions_block.get(service)
+        if "quay.io/cdis" not in version or len(version.split(":")) < 2:
+            # ignore non-CTDS repos.
+            # version without ":" is not usable.
+            continue
+        version = version.split(":")[1]
         if service not in IGNORE_SERVICE_ON_BRANCH and version_is_branch(version):
             services_on_branch.append(service)
     return services_on_branch
 
 
 def generate_comment(deployment_changes, services_on_branch):
+    # TODO: edit the previous comment instead of posting a new one
     contents = ""
     if services_on_branch:
         contents += "## :warning: Services on branch\n- {}\n".format(
