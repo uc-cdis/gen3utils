@@ -79,8 +79,8 @@ def post_deployment_changes(repository, pull_request_number):
     Comment on a pull request with any deployment changes when updating manifest services. Also comment a warning if a service is on a branch.
     """
 
-    if not "GH_TOKEN" in os.environ:
-        print("Exiting: Missing GH_TOKEN")
+    if not "GITHUB_TOKEN" in os.environ:
+        print("Exiting: Missing GITHUB_TOKEN")
         sys.exit(1)
 
     comment_deployment_changes_on_pr(repository, pull_request_number)
