@@ -9,7 +9,7 @@ import sys
 from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
 )
-from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
+# from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 
 logger = get_logger("cdismanifest", None, "info")

@@ -37,7 +37,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/uc-cdis/gen3utils",
     license="Apache",
-    packages=["gen3utils"],
+    packages=find_packages(),
     include_package_data=True,  # include non-code files from MANIFEST.in
     install_requires=[
         "PyYAML~=5.1",
