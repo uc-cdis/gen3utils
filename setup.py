@@ -39,6 +39,15 @@ setup(
     license="Apache",
     packages=["gen3utils"],
     include_package_data=True,  # include non-code files from MANIFEST.in
-    install_requires=["PyYAML~=5.1", "click", "cdislogging~=1.0.0"],
+    install_requires=[
+        "PyYAML~=5.1",
+        "click",
+        "cdislogging~=1.0.0",
+        "dictionaryutils~=3.0.0",
+        "gen3datamodel~=3.0.0",
+        "gen3dictionary~=2.0.1",
+        "gen3git~=0.2.1",
+        "psqlgraph~=3.0.0",
+    ],
     entry_points={"console_scripts": ["gen3utils=gen3utils.main:main"]},
 )
