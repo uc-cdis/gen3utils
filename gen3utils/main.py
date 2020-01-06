@@ -61,13 +61,14 @@ def validate_manifest(manifest_files):
 def validate_etl_mapping(etl_mapping_file, manifest_file):
     """Validate an ETL_MAPPING_FILE against the dictionary specified in the MANIFEST_FILE."""
 
-    with open(manifest_file, "r") as f1:
-        manifest = json.loads(f1.read())
-        dictionary_url = manifest.get("global", {}).get("dictionary_url")
-        assert dictionary_url, "No dictionary URL in manifest {}".format(manifest_file)
-        with open(etl_mapping_file, "r") as f2:
-            etl_mappings = yaml.safe_load(f2.read()).get("mappings")
-            val_etl_mapping(dictionary_url, etl_mappings)
+    pass
+    # with open(manifest_file, "r") as f1:
+    #     manifest = json.loads(f1.read())
+    #     dictionary_url = manifest.get("global", {}).get("dictionary_url")
+    #     assert dictionary_url, "No dictionary URL in manifest {}".format(manifest_file)
+    #     with open(etl_mapping_file, "r") as f2:
+    #         etl_mappings = yaml.safe_load(f2.read()).get("mappings")
+    #         val_etl_mapping(dictionary_url, etl_mappings)
 
 
 @main.command()
