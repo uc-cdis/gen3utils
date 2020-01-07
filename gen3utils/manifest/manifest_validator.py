@@ -1,14 +1,12 @@
 import click
 import json
-import logging
 import re
 import yaml
 
 from cdislogging import get_logger
 
 
-logger = get_logger("validate-manifest")
-logging.basicConfig()
+logger = get_logger("validate-manifest", log_level="info")
 
 
 def validate_manifest(manifest, validation_requirement):

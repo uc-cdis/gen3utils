@@ -1,5 +1,4 @@
 import json
-import logging
 import requests
 import os
 
@@ -9,12 +8,11 @@ import gen3git
 from gen3utils.manifest.manifest_validator import version_is_branch
 
 
+logger = get_logger("comment-deployment-changes", log_level="info")
+
+
 # whitelist of services to ignore when checking if services are on a branch
 IGNORE_SERVICE_ON_BRANCH = ["revproxy", "jupyterhub"]
-
-
-logger = get_logger("comment-deployment-changes")
-logging.basicConfig()
 
 
 def comment_deployment_changes_on_pr(repository, pull_request_number):

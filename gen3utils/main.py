@@ -1,7 +1,6 @@
 from cdislogging import get_logger
 import json
 import click
-import logging
 import os
 import yaml
 import sys
@@ -12,8 +11,7 @@ from gen3utils.deployment_changes.generate_comment import (
 # from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 
-logger = get_logger("cdismanifest", None, "info")
-logging.basicConfig()
+logger = get_logger("cdismanifest", log_level="info")
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -80,7 +78,7 @@ def post_deployment_changes(repository, pull_request_number):
     """
 
     if not "GITHUB_TOKEN" in os.environ:
-        print("Exiting: Missing GITHUB_TOKEN")
+        logger.error("Exiting: Missing GITHUB_TOKEN")
         sys.exit(1)
 
     comment_deployment_changes_on_pr(repository, pull_request_number)

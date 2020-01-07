@@ -1,12 +1,10 @@
-# import logging
 # import yaml
 
 # from cdislogging import get_logger
 
 # from .dd_utils import init_dictionary
 
-# logger = get_logger("validate-etl-mapping")
-# logging.basicConfig()
+# logger = get_logger("validate-etl-mapping", log_level="info")
 
 
 # class ValidationException(Exception):
