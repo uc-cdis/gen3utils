@@ -11,6 +11,7 @@ from gen3utils.deployment_changes.generate_comment import (
 
 # from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
+from gen3utils.etl.etl_validator import validate_mapping
 
 logger = get_logger("cdismanifest", log_level="info")
 
@@ -21,6 +22,8 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
+    validate_mapping('https://s3.amazonaws.com/dictionary-artifacts/tb-datadictionary/1.1.5/schema.json',
+                     '../tests/etlMapping.yaml')
 
 
 @main.command()
