@@ -1,14 +1,19 @@
 import yaml
 
-# from gen3utils.etl.etl_validator import validate_etl_mapping
+from gen3utils.etl.etl_validator import validate_mapping
 
 
 def test_pass_validation(etl_mapping_validation_dict, etl_mapping_validation_mapping):
-    # TODO: fix validate_etl_mapping() function
-    # validate_etl_mapping(etl_mapping_validation_dict, etl_mapping_validation_mapping)
-    pass
+    errors = validate_mapping(
+        etl_mapping_validation_dict, etl_mapping_validation_mapping
+    )
+    assert len(errors) == 0
 
 
-def test_fail_validation(etl_mapping_validation_dict, etl_mapping_validation_mapping):
-    # TODO
-    pass
+def test_fail_validation(
+    etl_mapping_validation_dict, etl_mapping_validation_mapping_failed
+):
+    errors = validate_mapping(
+        etl_mapping_validation_dict, etl_mapping_validation_mapping_failed
+    )
+    assert len(errors) == 5

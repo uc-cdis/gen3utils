@@ -7,4 +7,5 @@ def init_dictionary(url):
     # the gdcdatamodel expects dictionary initiated on load, so this can't be
     # imported on module level
     from gdcdatamodel import models as md
+
     return d, md
