@@ -1,6 +1,8 @@
+from collections import defaultdict
+
 import yaml
 import re
-from gen3utils.utils.dd import init_dictionary
+from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
 from gen3utils.assertion import assert_and_log
 
@@ -42,6 +44,7 @@ def validate_list_props(
             if (
                 "path" in prop
                 and "props" in prop
+                # joining_props does not require path (considering it later after having all indices)
                 and "index" not in prop
                 and "join_on" not in prop
             ):
@@ -63,6 +66,7 @@ def validate_list_props(
                     grouping_path,
                 )
                 index.props.update({p.name: p for p in new_props})
+            # joining_props which contain join_on and index will be validated after all indices are walked through
     elif type(props_list) is dict:
         for k, v in props_list.items():
             if k in labels_to_back_refs.keys():
@@ -138,14 +142,12 @@ def validate_fn(json_obj, recorded_errors):
 
 def validate_name(json_obj, recorded_errors):
     name = json_obj.get("name")
-    if name is None:
-        recorded_errors.append(
-            PropertiesError("Missing name for mapping property {}.".format(json_obj))
-        )
-    elif name == "":
+    if name is None or name == "":
         recorded_errors.append(
             PropertiesError(
-                "Name should not be empty for mapping property {}.".format(json_obj)
+                "Name is missed or empty string for mapping property {}.".format(
+                    json_obj
+                )
             )
         )
     return name
@@ -155,23 +157,24 @@ def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
     name = validate_name(json_obj, recorded_errors)
     fn = validate_fn(json_obj, recorded_errors)
     src = json_obj.get("src", name)
-    if src is not None:
-        if path is None:
+    if not src:
+        return name
+    if not path:
+        recorded_errors.append(
+            FieldError(
+                "src field must be specified with a path for {}".format(json_obj)
+            )
+        )
+    else:
+        path_items = path.split(".")
+        if fn != "count" and src not in nodes_with_props[path_items[-1]]:
             recorded_errors.append(
                 FieldError(
-                    "src field must be specified with a path for {}".format(json_obj)
-                )
-            )
-        else:
-            path_items = path.split(".")
-            if fn != "count" and src not in nodes_with_props[path_items[-1]]:
-                recorded_errors.append(
-                    FieldError(
-                        "src field {} (declared in {}) is not found in given dictionary.".format(
-                            src, json_obj
-                        )
+                    "src field {} (declared in {}) is not found in given dictionary.".format(
+                        src, json_obj
                     )
                 )
+            )
     return name
 
 
@@ -191,6 +194,8 @@ def validate_path(
         if "_ANY" in path_items:
             path_items.remove("_ANY")
         for item in path_items:
+            # get the edge name and the property definition out of the line:
+            # subjects[subject_id:id,project_id]
             [edge, str_fields] = (
                 list(filter(None, re.split(r"[\[\]]", item)))
                 if item.find("[") != -1
@@ -216,21 +221,43 @@ def validate_path(
 
 def get_all_nodes(model):
     labels_to_back_refs = {}
+    """
+    dictionary from label to back_ref
+    {
+        "subject": "subjects"
+    }
+    """
     nodes_with_props = {}
-    categories_to_labels = {}
+    """
+    dictionary nodes (with plural) to all properties
+    {
+        "subjects": [
+            "submitter_id",
+            "project_id",
+            "species"
+        ]
+    }
+    """
+    categories_to_labels = defaultdict(list)
+    """
+    group label by its category
+    {
+        "data_file": [
+            submitted_aligned_reads,
+            submitted_unaligned_reads
+        ]
+    }
+    """
     all_classes = model.Node.get_subclasses()
     for n in all_classes:
-        present_node = n._pg_edges
+        present_links = n._pg_edges
         present_props = n.__pg_properties__
-        present_node_props = [k for k in present_props.keys()]
-        present_node_props.append("id")
+        present_node_props = list(present_props.keys()) + ["id"]
         category = n._dictionary.get("category")
-        if category not in categories_to_labels:
-            categories_to_labels[category] = []
-        categories_to_labels.get(category).append(n.label)
+        categories_to_labels[category].append(n.label)
         backref = ""
-        if len(present_node) > 0:
-            backref = list(present_node.values())[0].get("backref")
+        if len(present_links) > 0:
+            backref = list(present_links.values())[0].get("backref")
             labels_to_back_refs[n.label] = backref
         nodes_with_props.update({backref: present_node_props})
     return labels_to_back_refs, nodes_with_props, categories_to_labels
@@ -239,13 +266,22 @@ def get_all_nodes(model):
 def validate_mapping(dictionary_url, mapping_file):
     dictionary, model = init_dictionary(dictionary_url)
     with open(mapping_file) as f:
-        mappings = yaml.load(f, Loader=yaml.SafeLoader)
+        mappings = yaml.safe_load(f)
 
     labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
 
     recorded_errors = []
     indices = {}
+    if not assert_and_log(
+        "mappings" in mappings, 'eltMapping file does not contain "mappings"'
+    ):
+        return
     for m in mappings.get("mappings"):
+        if not assert_and_log(
+            "doc_type" in m,
+            'Mapping {} does not contain "doc_type"'.format(m.get("name")),
+        ):
+            return
         index = Index(m.get("doc_type"))
         indices[index.name] = index
         category = m.get("category")
@@ -254,7 +290,7 @@ def validate_mapping(dictionary_url, mapping_file):
         else:
             first_categorized_node = m.get("doc_type")
         for key, value in m.items():
-            if key.find("props") != -1:
+            if key.endswith("props"):
                 root_path = (
                     labels_to_back_refs.get(first_categorized_node)
                     if key == "props"
@@ -269,7 +305,6 @@ def validate_mapping(dictionary_url, mapping_file):
                     index,
                 )
     for m in mappings.get("mappings"):
-        for k, v in m.items():
-            validate_joining_list_props(v, recorded_errors, indices)
-    assert_and_log(recorded_errors == [], "errors list: {}".format(recorded_errors))
+        joining_props = m.get("joining_props", [])
+        validate_joining_list_props(joining_props, recorded_errors, indices)
     return recorded_errors

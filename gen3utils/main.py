@@ -9,7 +9,6 @@ from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
 )
 
-# from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
 
@@ -56,9 +55,12 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
     with open(manifest_file, "r") as f1:
         manifest = json.loads(f1.read())
         dictionary_url = manifest.get("global", {}).get("dictionary_url")
-        assert dictionary_url, "No dictionary URL in manifest {}".format(manifest_file)
+        if dictionary_url is None:
+            logger.error("No dictionary URL in manifest {}".format(manifest_file))
+            return
         with open(etl_mapping_file, "r") as f2:
-            validate_mapping(dictionary_url, etl_mapping_file)
+            recorded_errors = validate_mapping(dictionary_url, etl_mapping_file)
+            assert recorded_errors == [], "errors list: {}".format(recorded_errors)
 
 
 @main.command()

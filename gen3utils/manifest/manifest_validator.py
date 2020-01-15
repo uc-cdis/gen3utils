@@ -4,7 +4,7 @@ from cdislogging import get_logger
 from gen3utils.assertion import assert_and_log
 
 
-logger = get_logger("gen3-validator", log_level="info")
+logger = get_logger("validate-manifest", log_level="info")
 
 
 def validate_manifest(manifest, validation_requirement):
