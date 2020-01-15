@@ -1,15 +1,19 @@
-from cdiserrors import *
-
-
 class MappingError(object):
     def __init__(self, message, type):
         self.message = '{} error: {}'.format(type, message)
         self.type = type
 
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return 'Error of {}: {}\n'.format(self.type, self.message)
+
+
 class PropertiesError(MappingError):
     def __init__(self, message):
-        super(MappingError, self).__init__(message, 'Properties')
+        super(PropertiesError, self).__init__(message, 'Properties')
 
 
 class PathError(MappingError):
@@ -26,3 +30,4 @@ class PathError(MappingError):
 class FieldError(MappingError):
     def __init__(self, message):
         super(FieldError, self).__init__(message, 'Field')
+

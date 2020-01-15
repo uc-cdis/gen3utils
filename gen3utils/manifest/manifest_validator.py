@@ -1,14 +1,7 @@
-import click
-import json
 from packaging import version
 import re
-import yaml
 
-from cdislogging import get_logger
-
-
-logger = get_logger("validate-manifest", log_level="info")
-
+from gen3utils.assertion import assert_and_log
 
 def validate_manifest(manifest, validation_requirement):
     """
@@ -42,23 +35,6 @@ def validate_manifest(manifest, validation_requirement):
             "cdis-manifest validation failed. See errors in previous logs."
         )
     logger.info("OK")
-
-
-def assert_and_log(assertion_success, error_message):
-    """
-    If an assertion fails, logs the provided error message and updates
-    the global variable "failed_validation" for future use.
-    
-    Args:
-        assertion_success (bool): result of an assertion.
-        error_message (str): message to display if the assertion failed.
-
-    Return:
-        assertion_success(bool): result of the assertion.
-    """
-    if not assertion_success:
-        logger.error(error_message)
-    return assertion_success
 
 
 def validate_manifest_block(manifest, blocks_requirements):

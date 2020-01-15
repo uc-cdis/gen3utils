@@ -22,8 +22,6 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
-    validate_mapping('https://s3.amazonaws.com/dictionary-artifacts/tb-datadictionary/1.1.5/schema.json',
-                     '../tests/etlMapping.yaml')
 
 
 @main.command()
@@ -55,14 +53,12 @@ def validate_manifest(manifest_files):
 def validate_etl_mapping(etl_mapping_file, manifest_file):
     """Validate an ETL_MAPPING_FILE against the dictionary specified in the MANIFEST_FILE."""
 
-    pass
-    # with open(manifest_file, "r") as f1:
-    #     manifest = json.loads(f1.read())
-    #     dictionary_url = manifest.get("global", {}).get("dictionary_url")
-    #     assert dictionary_url, "No dictionary URL in manifest {}".format(manifest_file)
-    #     with open(etl_mapping_file, "r") as f2:
-    #         etl_mappings = yaml.safe_load(f2.read()).get("mappings")
-    #         val_etl_mapping(dictionary_url, etl_mappings)
+    with open(manifest_file, "r") as f1:
+        manifest = json.loads(f1.read())
+        dictionary_url = manifest.get("global", {}).get("dictionary_url")
+        assert dictionary_url, "No dictionary URL in manifest {}".format(manifest_file)
+        with open(etl_mapping_file, "r") as f2:
+            validate_mapping(dictionary_url, etl_mapping_file)
 
 
 @main.command()
