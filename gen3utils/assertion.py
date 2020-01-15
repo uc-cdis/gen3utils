@@ -1,6 +1,6 @@
 from cdislogging import get_logger
 
-logger = get_logger("gen3-validator", log_level="info")
+logger = get_logger("gen3utils", log_level="info")
 
 
 def assert_and_log(assertion_success, error_message):
