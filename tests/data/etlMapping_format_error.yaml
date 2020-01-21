@@ -1,0 +1,47 @@
+mappings:
+  - name: tb
+    type: aggregator
+    root: subject
+    props:
+      - name: submitter_id
+      - name: project_id
+      - name: species
+    parent_props:
+      - path: studies[study_objective,study_submitter_id:submitter_id]
+  - name: tb_follow_up
+    type: aggregator
+    root: follow_up
+    props:
+      - name: submitter_id
+      - name: age_at_visit
+    parent_props:
+      - path: subjects[subject_id:id,project_id]
+    flatten_props:
+      - path: summary_socio_demographics
+        props:
+          - name: basenidu
+    aggregated_props:
+      - name: _drug_results
+        path: samples.tb_results
+        src: drug
+        fn: set
+  - name: tb_file
+    doc_type: file
+    type: collector
+    root: None
+    category: data_file
+    props:
+      - name: object_id
+      - name: md5sum
+      - name: file_name
+      - name: file_size
+      - name: data_format1
+      - name: data_type
+      - name: state
+    injecting_props:
+      subject:
+        props:
+          - name: subject_id
+            src: id
+            fn: set
+          - name: project_id

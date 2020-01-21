@@ -17,3 +17,10 @@ def test_fail_validation(
         etl_mapping_validation_dict, etl_mapping_validation_mapping_failed
     )
     assert len(errors) == 5
+
+
+def test_fail_format(etl_mapping_validation_dict, etl_mapping_validation_format_failed):
+    errors = validate_mapping(
+        etl_mapping_validation_dict, etl_mapping_validation_format_failed
+    )
+    assert len(errors) == 2

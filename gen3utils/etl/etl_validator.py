@@ -41,13 +41,7 @@ def validate_list_props(
 ):
     if type(props_list) is list:
         for prop in props_list:
-            if (
-                "path" in prop
-                and "props" in prop
-                # joining_props does not require path (considering it later after having all indices)
-                and "index" not in prop
-                and "join_on" not in prop
-            ):
+            if "path" in prop and "props" in prop:
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
                         real_prop,
@@ -57,7 +51,10 @@ def validate_list_props(
                         prop.get("path", grouping_path),
                     )
                     index.props.update({p.name: p for p in new_props})
-            elif "index" not in prop and "join_on" not in prop:
+            elif "index" in prop and "join_on" in prop:
+                # joining_props does not require path (considering it later after having all indices)
+                return
+            else:
                 new_props = validate_prop(
                     prop,
                     labels_to_back_refs.values(),
@@ -145,7 +142,7 @@ def validate_name(json_obj, recorded_errors):
     if name is None or name == "":
         recorded_errors.append(
             PropertiesError(
-                "Name is missed or empty string for mapping property {}.".format(
+                "Name is missing or empty string for mapping property {}.".format(
                     json_obj
                 )
             )
@@ -198,7 +195,7 @@ def validate_path(
             # subjects[subject_id:id,project_id]
             [edge, str_fields] = (
                 list(filter(None, re.split(r"[\[\]]", item)))
-                if item.find("[") != -1
+                if "[" in item
                 else [item, None]
             )
             if edge not in list_of_nodes:
@@ -263,25 +260,27 @@ def get_all_nodes(model):
     return labels_to_back_refs, nodes_with_props, categories_to_labels
 
 
-def validate_mapping(dictionary_url, mapping_file):
-    dictionary, model = init_dictionary(dictionary_url)
-    with open(mapping_file) as f:
-        mappings = yaml.safe_load(f)
-
-    labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
-
-    recorded_errors = []
-    indices = {}
-    if not assert_and_log(
-        "mappings" in mappings, 'eltMapping file does not contain "mappings"'
-    ):
-        return
+def check_mapping_format(mappings, recorded_errors):
+    if "mappings" not in mappings:
+        recorded_errors.append(
+            MappingError("eltMapping file does not contain 'mappings'", "format")
+        )
+        return recorded_errors
     for m in mappings.get("mappings"):
-        if not assert_and_log(
-            "doc_type" in m,
-            'Mapping {} does not contain "doc_type"'.format(m.get("name")),
-        ):
-            return
+        if "doc_type" not in m:
+            recorded_errors.append(
+                MappingError(
+                    "Mapping {} does not contain 'doc_type'".format(m.get("name")),
+                    "format",
+                )
+            )
+    return recorded_errors
+
+
+def check_mapping_constrains(mappings, model, recorded_errors):
+    labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
+    indices = {}
+    for m in mappings.get("mappings"):
         index = Index(m.get("doc_type"))
         indices[index.name] = index
         category = m.get("category")
@@ -308,3 +307,15 @@ def validate_mapping(dictionary_url, mapping_file):
         joining_props = m.get("joining_props", [])
         validate_joining_list_props(joining_props, recorded_errors, indices)
     return recorded_errors
+
+
+def validate_mapping(dictionary_url, mapping_file):
+    dictionary, model = init_dictionary(dictionary_url)
+    with open(mapping_file) as f:
+        mappings = yaml.safe_load(f)
+
+    recorded_errors = check_mapping_format(mappings, [])
+    if len(recorded_errors) > 0:
+        return recorded_errors
+
+    return check_mapping_constrains(mappings, model, recorded_errors)
