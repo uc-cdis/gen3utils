@@ -87,6 +87,25 @@ def test_versions_validation_needs(manifest_validation_config):
     assert not ok, "sower without guppy should not pass validation"
 
 
+def test_versions_comparison(manifest_validation_config):
+    """
+    Makes sure version "10.0.0" is considered higher than version "2.0.0"
+    """
+    versions_block = {
+        "fence": "quay.io/cdis/fence:3.0.0",
+        "arborist": "quay.io/cdis/arborist:3.0.0",
+    }
+    ok = versions_validation(versions_block, manifest_validation_config["versions"])
+    assert ok, "fence 3.0.0 + arborist 3.0.0 should pass validation: 3.0.0 > 2.0.0"
+
+    versions_block = {
+        "fence": "quay.io/cdis/fence:3.0.0",
+        "arborist": "quay.io/cdis/arborist:10.0.0",
+    }
+    ok = versions_validation(versions_block, manifest_validation_config["versions"])
+    assert ok, "fence 3.0.0 + arborist 10.0.0 should pass validation: 10.0.0 > 2.0.0"
+
+
 def test_validate_manifest_block(manifest_validation_config):
     """
     Test validation of sevice having block requirements in manifest for validation
@@ -98,13 +117,13 @@ def test_validate_manifest_block(manifest_validation_config):
     ok = validate_manifest_block(block_requirement, manifest_validation_config["block"])
     assert (
         ok
-    ), "arborist 2.2.0 with deployment_version in arborist blcok should pass validation"
+    ), "arborist 2.2.0 with deployment_version in arborist block should pass validation"
 
     block_requirement = {"versions": {"arborist": "quay.io/cdis/arborist:2.2.0"}}
     ok = validate_manifest_block(block_requirement, manifest_validation_config["block"])
     assert (
         not ok
-    ), "arborist 2.2.0 without deployment_version in arborist blcok should not pass validation"
+    ), "arborist 2.2.0 without deployment_version in arborist block should not pass validation"
 
     block_requirement = {
         "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
@@ -128,7 +147,7 @@ def test_validate_manifest_block(manifest_validation_config):
         },
     }
     ok = validate_manifest_block(block_requirement, manifest_validation_config["block"])
-    assert ok, "hatchery with sidecar in hatchery blcok should pass validation"
+    assert ok, "hatchery with sidecar in hatchery block should pass validation"
 
     block_requirement = {
         "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},

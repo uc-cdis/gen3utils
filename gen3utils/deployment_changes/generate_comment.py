@@ -1,6 +1,8 @@
 import json
-import requests
 import os
+from packaging import version
+import re
+import requests
 
 from cdislogging import get_logger
 import gen3git
@@ -116,6 +118,7 @@ def compare_versions_blocks(old_versions_block, new_versions_block):
         <service name>: { "old": <version>, "new": <version> }
     }
     """
+
     services = list(
         set(old_versions_block.keys()).union(set(new_versions_block.keys()))
     )
@@ -142,7 +145,7 @@ def compare_versions_blocks(old_versions_block, new_versions_block):
         if old_version != new_version:
             res[service] = {"old": old_version, "new": new_version}
 
-    logger.info("Updates: ", json.dumps(res, indent=2))
+    logger.info("Updates: {}".format(json.dumps(res, indent=2)))
     return res
 
 
@@ -173,7 +176,7 @@ def get_deployment_changes(versions_dict, token):
         if (
             not version_is_branch(versions["old"])
             and not version_is_branch(versions["new"])
-            and versions["old"] < versions["new"]
+            and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
             repo_name = "data-portal" if service == "portal" else service
             args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
@@ -186,7 +189,7 @@ def get_deployment_changes(versions_dict, token):
                 raise
             notes = release_notes.get("deployment changes")
             if notes:
-                res[service] = notes
+                res[service] = update_pr_links(service, notes)
     return res
 
 
@@ -205,6 +208,25 @@ def check_services_on_branch(versions_block):
         if service not in IGNORE_SERVICE_ON_BRANCH and version_is_branch(version):
             services_on_branch.append(service)
     return services_on_branch
+
+
+def update_pr_links(service, notes_list):
+    """
+    Replace the internal repo PR link with the external repo PR link
+    in each release note.
+    """
+    result = []
+    matcher = re.compile(".*\(#(?P<pr_number>[0-9]+)\)$")
+    # e.g. gets the PR number ("12") from "some description (#12)"
+    for note in notes_list:
+        match = matcher.match(note)
+        if match:
+            internal_pr_number = "#{}".format(match.groupdict()["pr_number"])
+            external_pr_number = "uc-cdis/{}{}".format(service, internal_pr_number)
+            result.append(note.replace(internal_pr_number, external_pr_number))
+        else:
+            result.append(note)
+    return result
 
 
 def generate_comment(deployment_changes, services_on_branch):
