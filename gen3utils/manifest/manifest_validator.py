@@ -1,5 +1,6 @@
 import click
 import json
+from packaging import version
 import re
 import yaml
 
@@ -90,18 +91,21 @@ def validate_manifest_block(manifest, blocks_requirements):
                 # max: Version in manifest is smaller than the verson in validation_config
 
                 if "min" in block["version"] and "max" in block["version"]:
-                    should_check_has = (
-                        block_requirement_version >= block["version"]["min"]
-                        and block_requirement_version < block["version"]["max"]
+                    should_check_has = version.parse(
+                        block_requirement_version
+                    ) >= version.parse(block["version"]["min"]) and version.parse(
+                        block_requirement_version
+                    ) < version.parse(
+                        block["version"]["max"]
                     )
                 elif "min" in block["version"]:
-                    should_check_has = (
-                        block_requirement_version >= block["version"]["min"]
-                    )
+                    should_check_has = version.parse(
+                        block_requirement_version
+                    ) >= version.parse(block["version"]["min"])
                 elif "max" in block["version"]:
-                    should_check_has = (
-                        block_requirement_version < block["version"]["max"]
-                    )
+                    should_check_has = version.parse(
+                        block_requirement_version
+                    ) < version.parse(block["version"]["max"])
 
             if should_check_has:
                 # Validation to check if a service has a specific key in its block in cdis-manfiest
@@ -202,7 +206,8 @@ def versions_validation(manifest_versions, versions_requirements):
             elif (
                 "min" not in versions_requirement[requirement_key]
                 and "max" not in versions_requirement[requirement_key]
-                and versions_requirement[requirement_key] <= requirement_version
+                and version.parse(versions_requirement[requirement_key])
+                <= version.parse(requirement_version)
             ):
                 # If the first service set to a specific version in validation_config, other services should matches the version requirements
                 ok = (
@@ -217,9 +222,10 @@ def versions_validation(manifest_versions, versions_requirements):
             elif (
                 "min" in versions_requirement[requirement_key]
                 and "max" in versions_requirement[requirement_key]
-                and versions_requirement[requirement_key]["min"]
-                <= requirement_version
-                < versions_requirement[requirement_key]["max"]
+                and version.parse(versions_requirement[requirement_key]["min"])
+                <= version.parse(requirement_version)
+                and version.parse(requirement_version)
+                < version.parse(versions_requirement[requirement_key]["max"])
             ):
                 # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
                 ok = (
@@ -271,7 +277,8 @@ def version_requirement_validation(
         ):
             ok = (
                 assert_and_log(
-                    service_requirement[required_service] <= service_version,
+                    version.parse(service_requirement[required_service])
+                    <= version.parse(service_version),
                     required_service + " version is not as expected in manifest",
                 )
                 and ok
@@ -282,8 +289,10 @@ def version_requirement_validation(
         ):
             ok = (
                 assert_and_log(
-                    service_requirement[required_service]["min"] <= service_version
-                    and service_version < service_requirement[required_service]["max"],
+                    version.parse(service_requirement[required_service]["min"])
+                    <= version.parse(service_version)
+                    and version.parse(service_version)
+                    < version.parse(service_requirement[required_service]["max"]),
                     required_service + " version is not as expected in manifest",
                 )
                 and ok

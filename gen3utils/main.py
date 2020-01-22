@@ -8,6 +8,7 @@ import sys
 from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
 )
+
 # from gen3utils.etl.etl_validator import validate_etl_mapping as val_etl_mapping
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 
@@ -20,14 +21,6 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
-
-
-# for backwards compatibility - TODO remove in next release
-@main.command()
-@click.argument("manifest_files", type=str, nargs=-1, required=True)
-def validate(manifest_files):
-    """Deprecated! Use "validate_manifest" command instead."""
-    validate_manifest(manifest_files)
 
 
 @main.command()
