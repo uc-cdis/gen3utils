@@ -28,7 +28,7 @@ def etl_mapping_validation_mapping():
 
 @pytest.fixture(scope="session")
 def etl_mapping_validation_mapping_failed():
-    return "tests/data/etlMapping_constrains_error.yaml"
+    return "tests/data/etlMapping_constraints_error.yaml"
 
 
 @pytest.fixture(scope="session")

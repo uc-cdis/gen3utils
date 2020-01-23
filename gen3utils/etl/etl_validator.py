@@ -41,7 +41,7 @@ def validate_list_props(
 ):
     if type(props_list) is list:
         for prop in props_list:
-            if "path" in prop and "props" in prop:
+            if "path" in prop and "props" in prop:  # flatten_props
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
                         real_prop,
@@ -51,7 +51,7 @@ def validate_list_props(
                         prop.get("path", grouping_path),
                     )
                     index.props.update({p.name: p for p in new_props})
-            elif "index" in prop and "join_on" in prop:
+            elif "index" in prop and "join_on" in prop:  # joining_props
                 # joining_props does not require path (considering it later after having all indices)
                 return
             else:
@@ -261,6 +261,7 @@ def get_all_nodes(model):
 
 
 def check_mapping_format(mappings, recorded_errors):
+    # TODO add more checks to this
     if "mappings" not in mappings:
         recorded_errors.append(
             MappingError("eltMapping file does not contain 'mappings'", "format")
@@ -277,7 +278,7 @@ def check_mapping_format(mappings, recorded_errors):
     return recorded_errors
 
 
-def check_mapping_constrains(mappings, model, recorded_errors):
+def check_mapping_constraints(mappings, model, recorded_errors):
     labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
     indices = {}
     for m in mappings.get("mappings"):
@@ -318,4 +319,4 @@ def validate_mapping(dictionary_url, mapping_file):
     if len(recorded_errors) > 0:
         return recorded_errors
 
-    return check_mapping_constrains(mappings, model, recorded_errors)
+    return check_mapping_constraints(mappings, model, recorded_errors)
