@@ -18,10 +18,19 @@ def manifest_validation_config():
 
 @pytest.fixture(scope="session")
 def etl_mapping_validation_dict():
-    return "https://s3.amazonaws.com/dictionary-artifacts/datadictionary/develop/schema.json"
+    return "https://s3.amazonaws.com/dictionary-artifacts/tb-datadictionary/1.1.5/schema.json"
 
 
 @pytest.fixture(scope="session")
 def etl_mapping_validation_mapping():
-    with open("tests/exampleEtlMapping.yaml", "r") as f:
-        return yaml.safe_load(f.read()).get("mappings")
+    return "tests/data/etlMapping.yaml"
+
+
+@pytest.fixture(scope="session")
+def etl_mapping_validation_mapping_failed():
+    return "tests/data/etlMapping_constrains_error.yaml"
+
+
+@pytest.fixture(scope="session")
+def etl_mapping_validation_format_failed():
+    return "tests/data/etlMapping_format_error.yaml"

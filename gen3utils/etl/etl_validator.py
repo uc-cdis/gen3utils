@@ -1,202 +1,321 @@
-# import yaml
+from collections import defaultdict
 
-# from cdislogging import get_logger
-
-# from .dd_utils import init_dictionary
-
-# logger = get_logger("validate-etl-mapping", log_level="info")
-
-
-# class ValidationException(Exception):
-#     def __init__(self, message, code=500):
-#         self.message = str(message)
-#         self.code = code
+import yaml
+import re
+from gen3utils.etl.dd_utils import init_dictionary
+from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
+from gen3utils.assertion import assert_and_log
 
 
-# def validate_aggregation_mapping(mapping, list_of_nodes):
-#     aggregation_key_list = [
-#         "name",
-#         "doc_type",
-#         "type",
-#         "root",
-#         "props",
-#         "flatten_props",
-#         "aggregated_props",
-#     ]
-#     props_attr_list = [
-#         "name",
-#         "src",
-#         "path",
-#         "fn",
-#         "value_mappings",
-#         "props",
-#         "sorted_by",
-#     ]
-#     nodes_with_props = {}
-
-#     for key, value in mapping.items():
-#         if key in aggregation_key_list:
-#             check_none = mapping.get(key)
-#             if check_none == "":
-#                 raise ValidationException("Error in root properties values")
-#             elif key == "props":
-#                 for n in value:
-#                     if n["name"] not in nodes_with_props["subjects"]:
-#                         raise ValidationException(
-#                             "Something wrong with root node properties, not find in dictionary"
-#                         )
-
-#             elif key == "flatten_props":
-#                 for n in value:
-#                     if not all(elem in props_attr_list for elem in n.keys()):
-#                         raise ValidationException("Error-Node name wrong")
-#                     if n["path"] not in list_of_nodes:
-#                         raise ValidationException("Path doesn't exist in dictionary")
-#                     elif n.values() == "":
-#                         raise ValidationException("Error in Flatten properties")
-#                     for l in n["props"]:
-#                         if l["name"] == "":
-#                             raise ValidationException(
-#                                 "Error in Flatten properties- Null Values"
-#                             )
-#                         elif l["name"] not in nodes_with_props[n["path"]]:
-#                             raise ValidationException(
-#                                 "Something wrong with Flatten properties, not find in dictionary"
-#                             )
-
-#             elif key == "aggregated_props":
-#                 for n in value:
-#                     if not all(elem in props_attr_list for elem in n.keys()):
-#                         raise ValidationException("Error-Node name wrong")
-#                     elif n.values() == "":
-#                         raise ValidationException(
-#                             "Error in properties value- name, src, fn etc - Null values"
-#                         )
-#                     if "fn" in n.keys():
-#                         if n["fn"] not in ["set", "count", "list", "sum", "min"]:
-#                             raise ValidationException(
-#                                 "Error in Function under mapping file - " + n["fn"]
-#                             )
-#                     if "path" in n.keys():
-#                         split_node = n["path"].split(".")
-#                         if "_ANY" in split_node:
-#                             split_node.remove("_ANY")
-#                             for s in split_node:
-#                                 if s not in list_of_nodes:
-#                                     raise ValidationException(
-#                                         "Aggregated props path not find in dictionary"
-#                                     )
-#                         else:
-#                             for s in split_node:
-#                                 if s not in list_of_nodes:
-#                                     raise ValidationException(
-#                                         "Aggregated props path not find under dictionary"
-#                                     )
-
-#                     if "src" in n.keys():
-#                         split_node = n["path"].split(".")
-#                         if n["src"] not in nodes_with_props[split_node[-1]]:
-#                             raise ValidationException("src not find under dictionary")
-
-#             elif key == "joining_props":
-#                 join_list = ["index", "join_on", "props"]
-#                 # print value
-#                 for n in value:
-#                     if not all(elem in join_list for elem in n.keys()):
-#                         raise ValidationException("Error-Node name wrong")
-#                     elif n.values() == "":
-#                         raise ValidationException(
-#                             "Error in properties value- index, join_on, props etc - Null values"
-#                         )
-
-#                     for i in n["props"]:
-#                         if not all(elem in props_attr_list for elem in i.keys()):
-#                             raise ValidationException("Error-Node name wrong")
-#                         if "fn" in i.keys():
-#                             if i["fn"] not in ["set", "count", "list", "sum", "min"]:
-#                                 raise ValidationException(
-#                                     "Error in Function under mapping file - " + i["fn"]
-#                                 )
-
-#         else:
-#             raise ValidationException("Root Node attributes are missing")
+class Prop:
+    def __init__(self, name):
+        self.name = name
 
 
-# def validate_collector(mapping, list_of_nodes):
-#     props_attr_list = [
-#         "name",
-#         "src",
-#         "path",
-#         "fn",
-#         "value_mappings",
-#         "props",
-#         "sorted_by",
-#     ]
-#     collector_keys_list = [
-#         "name",
-#         "doc_type",
-#         "type",
-#         "root",
-#         "category",
-#         "props",
-#         "injecting_props",
-#     ]
-
-#     for key, value in mapping.items():
-#         if key in collector_keys_list:
-#             collector_key_value = mapping.get(key)
-#             if collector_key_value == "":
-#                 raise ValidationException("Error in Collector Properties")
-#             elif key == "props":
-#                 for n in value:
-#                     if n.values() == "":
-#                         raise ValidationException("Error in properties of collector -")
-
-#             elif key == "injecting_props":
-#                 for k, v in value.items():
-#                     inject_props = v.get("props")
-#                     for a in inject_props:
-#                         if not all(elem in props_attr_list for elem in a.keys()):
-#                             raise ValidationException(
-#                                 "Error in collector properties attributes - 'props'"
-#                             )
-#                         elif a.values() == "":
-#                             raise ValidationException(
-#                                 "Error in properties of collector - Blank values"
-#                             )
-#                         else:
-#                             raise ValidationException(
-#                                 "Error in Collector Attributes, some attributes are missing"
-#                             )
-#         else:
-#             raise ValidationException(
-#                 "Error in Collector Attributes, some attributes are missing"
-#             )
+class Index:
+    def __init__(self, name):
+        self.name = name
+        id_name = "{}_id".format(name)
+        self.props = {id_name: Prop(id_name)}
 
 
-# def get_all_nodes(model):
-#     list_of_nodes = []
-#     nodes_with_props = {}
-#     all_classes = model.Node.get_subclasses()
-#     for n in all_classes:
-#         present_node = n._pg_edges
-#         present_props = n.__pg_properties__
-#         present_node_props = [k for k in present_props.keys()]
-#         for v in present_node.values():
-#             respo = v["backref"]
-#             nodes_with_props.update({respo: present_node_props})
-#             list_of_nodes.append(respo)
-#     list_of_nodes = list(set(list_of_nodes))
-#     return list_of_nodes, nodes_with_props
+def validate_joining_list_props(props_list, recorded_errors, existing_indices):
+    if type(props_list) is list:
+        for prop in props_list:
+            if "index" in prop and "join_on" in prop:
+                for real_prop in prop.get("props"):
+                    validate_joining_prop(
+                        real_prop,
+                        recorded_errors,
+                        existing_indices.get(prop.get("index")),
+                    )
 
 
-# def validate_etl_mapping(dictionary_url, etl_mappings):
-#     logger.info("Initializing dictionary from URL...")
-#     _, model = init_dictionary(dictionary_url)
-#     list_of_nodes, _ = get_all_nodes(model)
+def validate_list_props(
+    props_list,
+    labels_to_back_refs,
+    nodes_with_props,
+    recorded_errors,
+    grouping_path,
+    index,
+):
+    if type(props_list) is list:
+        for prop in props_list:
+            if "path" in prop and "props" in prop:
+                for real_prop in prop.get("props"):
+                    new_props = validate_prop(
+                        real_prop,
+                        labels_to_back_refs.values(),
+                        nodes_with_props,
+                        recorded_errors,
+                        prop.get("path", grouping_path),
+                    )
+                    index.props.update({p.name: p for p in new_props})
+            elif "index" in prop and "join_on" in prop:
+                # joining_props does not require path (considering it later after having all indices)
+                return
+            else:
+                new_props = validate_prop(
+                    prop,
+                    labels_to_back_refs.values(),
+                    nodes_with_props,
+                    recorded_errors,
+                    grouping_path,
+                )
+                index.props.update({p.name: p for p in new_props})
+            # joining_props which contain join_on and index will be validated after all indices are walked through
+    elif type(props_list) is dict:
+        for k, v in props_list.items():
+            if k in labels_to_back_refs.keys():
+                for prop in v.get("props"):
+                    new_props = validate_prop(
+                        prop,
+                        labels_to_back_refs.values(),
+                        nodes_with_props,
+                        recorded_errors,
+                        labels_to_back_refs.get(k),
+                    )
+                    index.props.update({p.name: p for p in new_props})
 
-#     for m in etl_mappings:
-#         if m["type"] == "aggregator":
-#             validate_aggregation_mapping(m, list_of_nodes)
-#         elif m["type"] == "collector":
-#             validate_collector(m, list_of_nodes)
+
+def validate_joining_prop(json_obj, recorded_errors, joining_index):
+    name = validate_name(json_obj, recorded_errors)
+    validate_fn(json_obj, recorded_errors)
+    validate_joining_src(json_obj, recorded_errors, joining_index.props)
+    return Prop(name)
+
+
+def validate_prop(
+    json_obj, list_of_nodes, nodes_with_props, recorded_errors, grouping_path=None
+):
+    names = validate_path(
+        json_obj, grouping_path, recorded_errors, list_of_nodes, nodes_with_props
+    )
+    if len(names) == 0:
+        names.append(
+            validate_name_src(
+                json_obj,
+                json_obj.get("path", grouping_path),
+                recorded_errors,
+                nodes_with_props,
+            )
+        )
+
+    props = [Prop(n) for n in names]
+    return props
+
+
+def validate_joining_src(json_obj, recorded_errors, joining_props):
+    src = json_obj.get("src", json_obj.get("name"))
+    if src is not None:
+        if src not in joining_props:
+            recorded_errors.append(
+                FieldError(
+                    "src field {} (declared in {}) is not found in joining index.".format(
+                        src, json_obj
+                    )
+                )
+            )
+    else:
+        recorded_errors.append(
+            FieldError("Missing source field for {}".format(json_obj))
+        )
+
+
+def validate_fn(json_obj, recorded_errors):
+    fn = json_obj.get("fn")
+    if fn is not None:
+        if fn not in ["set", "count", "list", "sum", "min", "max"]:
+            recorded_errors.append(
+                MappingError(
+                    "{} function (declared in {}) is not supported in ETL".format(
+                        fn, json_obj
+                    ),
+                    "Function",
+                )
+            )
+    return fn
+
+
+def validate_name(json_obj, recorded_errors):
+    name = json_obj.get("name")
+    if name is None or name == "":
+        recorded_errors.append(
+            PropertiesError(
+                "Name is missing or empty string for mapping property {}.".format(
+                    json_obj
+                )
+            )
+        )
+    return name
+
+
+def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
+    name = validate_name(json_obj, recorded_errors)
+    fn = validate_fn(json_obj, recorded_errors)
+    src = json_obj.get("src", name)
+    if not src:
+        return name
+    if not path:
+        recorded_errors.append(
+            FieldError(
+                "src field must be specified with a path for {}".format(json_obj)
+            )
+        )
+    else:
+        path_items = path.split(".")
+        if fn != "count" and src not in nodes_with_props[path_items[-1]]:
+            recorded_errors.append(
+                FieldError(
+                    "src field {} (declared in {}) is not found in given dictionary.".format(
+                        src, json_obj
+                    )
+                )
+            )
+    return name
+
+
+def validate_path(
+    json_obj, grouping_path, recorded_errors, list_of_nodes, nodes_with_props
+):
+    path = json_obj.get("path", grouping_path)
+    names = []
+    if path is None:
+        recorded_errors.append(
+            PropertiesError(
+                "Missing path declaration for the property {}.".format(json_obj)
+            )
+        )
+    else:
+        path_items = path.split(".")
+        if "_ANY" in path_items:
+            path_items.remove("_ANY")
+        for item in path_items:
+            # get the edge name and the property definition out of the line:
+            # subjects[subject_id:id,project_id]
+            [edge, str_fields] = (
+                list(filter(None, re.split(r"[\[\]]", item)))
+                if "[" in item
+                else [item, None]
+            )
+            if edge not in list_of_nodes:
+                recorded_errors.append(PathError(path))
+            if str_fields is not None:
+                fields = str_fields.split(",")
+                for f in fields:
+                    src = f.split(":")[-1] if f.find(":") != -1 else f
+                    name = f.split(":")[0] if f.find(":") != -1 else f
+                    names.append(
+                        validate_name_src(
+                            {"name": name, "src": src},
+                            edge,
+                            recorded_errors,
+                            nodes_with_props,
+                        )
+                    )
+    return names
+
+
+def get_all_nodes(model):
+    labels_to_back_refs = {}
+    """
+    dictionary from label to back_ref
+    {
+        "subject": "subjects"
+    }
+    """
+    nodes_with_props = {}
+    """
+    dictionary nodes (with plural) to all properties
+    {
+        "subjects": [
+            "submitter_id",
+            "project_id",
+            "species"
+        ]
+    }
+    """
+    categories_to_labels = defaultdict(list)
+    """
+    group label by its category
+    {
+        "data_file": [
+            submitted_aligned_reads,
+            submitted_unaligned_reads
+        ]
+    }
+    """
+    all_classes = model.Node.get_subclasses()
+    for n in all_classes:
+        present_links = n._pg_edges
+        present_props = n.__pg_properties__
+        present_node_props = list(present_props.keys()) + ["id"]
+        category = n._dictionary.get("category")
+        categories_to_labels[category].append(n.label)
+        backref = ""
+        if len(present_links) > 0:
+            backref = list(present_links.values())[0].get("backref")
+            labels_to_back_refs[n.label] = backref
+        nodes_with_props.update({backref: present_node_props})
+    return labels_to_back_refs, nodes_with_props, categories_to_labels
+
+
+def check_mapping_format(mappings, recorded_errors):
+    if "mappings" not in mappings:
+        recorded_errors.append(
+            MappingError("eltMapping file does not contain 'mappings'", "format")
+        )
+        return recorded_errors
+    for m in mappings.get("mappings"):
+        if "doc_type" not in m:
+            recorded_errors.append(
+                MappingError(
+                    "Mapping {} does not contain 'doc_type'".format(m.get("name")),
+                    "format",
+                )
+            )
+    return recorded_errors
+
+
+def check_mapping_constrains(mappings, model, recorded_errors):
+    labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
+    indices = {}
+    for m in mappings.get("mappings"):
+        index = Index(m.get("doc_type"))
+        indices[index.name] = index
+        category = m.get("category")
+        if category is not None:
+            first_categorized_node = categories_to_labels.get(category)[0]
+        else:
+            first_categorized_node = m.get("doc_type")
+        for key, value in m.items():
+            if key.endswith("props"):
+                root_path = (
+                    labels_to_back_refs.get(first_categorized_node)
+                    if key == "props"
+                    else None
+                )
+                validate_list_props(
+                    value,
+                    labels_to_back_refs,
+                    nodes_with_props,
+                    recorded_errors,
+                    root_path,
+                    index,
+                )
+    for m in mappings.get("mappings"):
+        joining_props = m.get("joining_props", [])
+        validate_joining_list_props(joining_props, recorded_errors, indices)
+    return recorded_errors
+
+
+def validate_mapping(dictionary_url, mapping_file):
+    dictionary, model = init_dictionary(dictionary_url)
+    with open(mapping_file) as f:
+        mappings = yaml.safe_load(f)
+
+    recorded_errors = check_mapping_format(mappings, [])
+    if len(recorded_errors) > 0:
+        return recorded_errors
+
+    return check_mapping_constrains(mappings, model, recorded_errors)
