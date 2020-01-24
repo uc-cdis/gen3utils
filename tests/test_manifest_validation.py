@@ -14,13 +14,13 @@ def test_manifest_version():
     }
 
     indexd_version = manifest_version(versions_block, "indexd")
-    assert indexd_version == "1.0.0"
+    assert str(indexd_version) == "1.0.0"
 
     arborist_version = manifest_version(versions_block, "arborist")
-    assert arborist_version == "master"
+    assert str(arborist_version) == "master"
 
     fence_version = manifest_version(versions_block, "fence")
-    assert fence_version == "feat_mybranch"
+    assert str(fence_version) == "feat_mybranch"
 
 
 def test_service_is_on_branch():

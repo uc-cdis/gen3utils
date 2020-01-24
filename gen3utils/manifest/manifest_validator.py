@@ -70,22 +70,22 @@ def validate_manifest_block(manifest, blocks_requirements):
                 # min: Version in manifest is equal or greater than the verson in validation_config
                 # max: Version in manifest is smaller than the verson in validation_config
 
-                if "min" in block["version"] and "max" in block["version"]:
-                    should_check_has = version.parse(
-                        block_requirement_version
-                    ) >= version.parse(block["version"]["min"]) and version.parse(
-                        block_requirement_version
-                    ) < version.parse(
-                        block["version"]["max"]
+                min_version = block["version"].get("min")
+                max_version = block["version"].get("max")
+                if min_version:
+                    min_version = version.parse(min_version)
+                if max_version:
+                    max_version = version.parse(max_version)
+
+                if min_version and max_version:
+                    should_check_has = (
+                        block_requirement_version >= min_version
+                        and block_requirement_version < max_version
                     )
-                elif "min" in block["version"]:
-                    should_check_has = version.parse(
-                        block_requirement_version
-                    ) >= version.parse(block["version"]["min"])
-                elif "max" in block["version"]:
-                    should_check_has = version.parse(
-                        block_requirement_version
-                    ) < version.parse(block["version"]["max"])
+                elif min_version:
+                    should_check_has = block_requirement_version >= min_version
+                elif max_version:
+                    should_check_has = block_requirement_version < max_version
 
             if should_check_has:
                 # Validation to check if a service has a specific key in its block in cdis-manfiest
@@ -123,7 +123,7 @@ def manifest_version(manifest_versions, service):
             service: microservice name
             manifest_versions: the versions block from manifest.json
         Return:
-            microservice version (None if service not in manifest)
+            parsed microservice version (or None if service not in manifest)
     """
     for manifest_version in manifest_versions:
         if manifest_version == service:
@@ -132,8 +132,15 @@ def manifest_version(manifest_versions, service):
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version):
-                logger.warning("  {} is on a branch: not validating".format(service))
-            return service_version
+                logger.warning(
+                    "  {} is on a branch ({}): not validating".format(
+                        service, service_version
+                    )
+                )
+            try:
+                return version.parse(service_version)
+            except:
+                return service_version
 
 
 def version_is_branch(version):
@@ -145,7 +152,7 @@ def version_is_branch(version):
         bool: True if version only contains digits and dots
     """
     reg = re.compile("^[0-9]+(.[0-9]+)*$")
-    return not bool(reg.match(version))
+    return not bool(reg.match(str(version)))
 
 
 def versions_validation(manifest_versions, versions_requirements):
@@ -166,14 +173,17 @@ def versions_validation(manifest_versions, versions_requirements):
         requirement_list = versions_requirement["needs"]
         requirement_key_list = list(requirement_list.keys())
         requirement_key = list(versions_requirement)[0]
-        requirement_version = manifest_version(manifest_versions, requirement_key)
+        actual_version = manifest_version(manifest_versions, requirement_key)
 
         if requirement_key in manifest_versions and not version_is_branch(
-            requirement_version
+            actual_version
         ):
+
+            required_version = versions_requirement[requirement_key]
+
             # If the first service set to * under validation_config versions, other services should be in the manifest
             # The second condition is ignoring branch on sevice. WHICH IS NOT GOO. Added a warning in the log
-            if versions_requirement[requirement_key] == "*":
+            if required_version == "*":
                 for required_service in requirement_key_list:
                     ok = (
                         assert_and_log(
@@ -184,10 +194,9 @@ def versions_validation(manifest_versions, versions_requirements):
                     )
 
             elif (
-                "min" not in versions_requirement[requirement_key]
-                and "max" not in versions_requirement[requirement_key]
-                and version.parse(versions_requirement[requirement_key])
-                <= version.parse(requirement_version)
+                "min" not in required_version
+                and "max" not in required_version
+                and version.parse(required_version) <= actual_version
             ):
                 # If the first service set to a specific version in validation_config, other services should matches the version requirements
                 ok = (
@@ -195,17 +204,15 @@ def versions_validation(manifest_versions, versions_requirements):
                         requirement_list,
                         requirement_key_list,
                         manifest_versions,
-                        "{} {}".format(requirement_key, requirement_version),
+                        "{} {}".format(requirement_key, actual_version),
                     )
                     and ok
                 )
             elif (
-                "min" in versions_requirement[requirement_key]
-                and "max" in versions_requirement[requirement_key]
-                and version.parse(versions_requirement[requirement_key]["min"])
-                <= version.parse(requirement_version)
-                and version.parse(requirement_version)
-                < version.parse(versions_requirement[requirement_key]["max"])
+                "min" in required_version
+                and "max" in required_version
+                and version.parse(required_version["min"]) <= actual_version
+                and actual_version < version.parse(required_version["max"])
             ):
                 # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
                 ok = (
@@ -213,7 +220,7 @@ def versions_validation(manifest_versions, versions_requirements):
                         requirement_list,
                         requirement_key_list,
                         manifest_versions,
-                        "{} {}".format(requirement_key, requirement_version),
+                        "{} {}".format(requirement_key, actual_version),
                     )
                     and ok
                 )
@@ -240,15 +247,20 @@ def version_requirement_validation(
 
     for required_service in requirement_key_list:
 
-        service_version = manifest_version(versions_manifest, required_service)
+        actual_version = manifest_version(versions_manifest, required_service)
 
-        if not service_version:
+        if not actual_version:
             logger.error(
                 'Service "{}" not in manifest but required to validate "{}" with "{}"'.format(
                     required_service, current_validation, service_requirement
                 )
             )
             ok = False
+            continue
+
+        if version_is_branch(actual_version):
+            # ignoring service on branch - user was already informed of this
+            # by the log in `manifest_version()`
             continue
 
         if (
@@ -258,8 +270,13 @@ def version_requirement_validation(
             ok = (
                 assert_and_log(
                     version.parse(service_requirement[required_service])
-                    <= version.parse(service_version),
-                    required_service + " version is not as expected in manifest",
+                    <= actual_version,
+                    'Service "{}" version "{}" does not respect requirement "{}" for "{}"'.format(
+                        required_service,
+                        actual_version,
+                        service_requirement,
+                        current_validation,
+                    ),
                 )
                 and ok
             )
@@ -270,10 +287,15 @@ def version_requirement_validation(
             ok = (
                 assert_and_log(
                     version.parse(service_requirement[required_service]["min"])
-                    <= version.parse(service_version)
-                    and version.parse(service_version)
+                    <= actual_version
+                    and actual_version
                     < version.parse(service_requirement[required_service]["max"]),
-                    required_service + " version is not as expected in manifest",
+                    'Service "{}" version "{}" does not respect requirement "{}" for "{}"'.format(
+                        required_service,
+                        actual_version,
+                        service_requirement,
+                        current_validation,
+                    ),
                 )
                 and ok
             )

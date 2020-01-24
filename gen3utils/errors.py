@@ -7,7 +7,7 @@ class MappingError(object):
         return self.__repr__()
 
     def __repr__(self):
-        return "{}\n".format(self.message)
+        return "{}".format(self.message)
 
 
 class PropertiesError(MappingError):

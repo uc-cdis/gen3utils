@@ -47,8 +47,9 @@ setup(
         "gen3datamodel~=3.0.0",
         "gen3dictionary~=2.0.1",
         "gen3git~=0.2.3",
+        "packaging~=20.0",
         "psqlgraph~=3.0.0",
-        "packaging",
+        "six~=1.12.0",  # for psqlgraph
     ],
     entry_points={"console_scripts": ["gen3utils=gen3utils.main:main"]},
 )

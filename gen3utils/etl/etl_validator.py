@@ -1,10 +1,9 @@
 from collections import defaultdict
-
 import yaml
 import re
+
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
-from gen3utils.assertion import assert_and_log
 
 
 class Prop:
@@ -41,7 +40,7 @@ def validate_list_props(
 ):
     if type(props_list) is list:
         for prop in props_list:
-            if "path" in prop and "props" in prop:
+            if "path" in prop and "props" in prop:  # flatten_props
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
                         real_prop,
@@ -51,7 +50,7 @@ def validate_list_props(
                         prop.get("path", grouping_path),
                     )
                     index.props.update({p.name: p for p in new_props})
-            elif "index" in prop and "join_on" in prop:
+            elif "index" in prop and "join_on" in prop:  # joining_props
                 # joining_props does not require path (considering it later after having all indices)
                 return
             else:
@@ -111,14 +110,14 @@ def validate_joining_src(json_obj, recorded_errors, joining_props):
         if src not in joining_props:
             recorded_errors.append(
                 FieldError(
-                    "src field {} (declared in {}) is not found in joining index.".format(
+                    'src field "{}" (declared in "{}") is not found in joining index.'.format(
                         src, json_obj
                     )
                 )
             )
     else:
         recorded_errors.append(
-            FieldError("Missing source field for {}".format(json_obj))
+            FieldError('Missing source field for "{}"'.format(json_obj))
         )
 
 
@@ -128,7 +127,7 @@ def validate_fn(json_obj, recorded_errors):
         if fn not in ["set", "count", "list", "sum", "min", "max"]:
             recorded_errors.append(
                 MappingError(
-                    "{} function (declared in {}) is not supported in ETL".format(
+                    '"{}" function (declared in "{}") is not supported in ETL'.format(
                         fn, json_obj
                     ),
                     "Function",
@@ -142,7 +141,7 @@ def validate_name(json_obj, recorded_errors):
     if name is None or name == "":
         recorded_errors.append(
             PropertiesError(
-                "Name is missing or empty string for mapping property {}.".format(
+                'Name is missing or empty string for mapping property "{}".'.format(
                     json_obj
                 )
             )
@@ -159,15 +158,15 @@ def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
     if not path:
         recorded_errors.append(
             FieldError(
-                "src field must be specified with a path for {}".format(json_obj)
+                'src field must be specified with a path for "{}"'.format(json_obj)
             )
         )
     else:
         path_items = path.split(".")
-        if fn != "count" and src not in nodes_with_props[path_items[-1]]:
+        if fn != "count" and src not in nodes_with_props.get(path_items[-1], []):
             recorded_errors.append(
                 FieldError(
-                    "src field {} (declared in {}) is not found in given dictionary.".format(
+                    'src field "{}" (declared in "{}") is not found in given dictionary.'.format(
                         src, json_obj
                     )
                 )
@@ -183,7 +182,7 @@ def validate_path(
     if path is None:
         recorded_errors.append(
             PropertiesError(
-                "Missing path declaration for the property {}.".format(json_obj)
+                'Missing path declaration for the property "{}".'.format(json_obj)
             )
         )
     else:
@@ -261,23 +260,24 @@ def get_all_nodes(model):
 
 
 def check_mapping_format(mappings, recorded_errors):
+    # TODO add more checks to this
     if "mappings" not in mappings:
         recorded_errors.append(
-            MappingError("eltMapping file does not contain 'mappings'", "format")
+            MappingError('etlMapping file does not contain "mappings"', "format")
         )
         return recorded_errors
     for m in mappings.get("mappings"):
         if "doc_type" not in m:
             recorded_errors.append(
                 MappingError(
-                    "Mapping {} does not contain 'doc_type'".format(m.get("name")),
+                    'Mapping "{}" does not contain "doc_type"'.format(m.get("name")),
                     "format",
                 )
             )
     return recorded_errors
 
 
-def check_mapping_constrains(mappings, model, recorded_errors):
+def check_mapping_constraints(mappings, model, recorded_errors):
     labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
     indices = {}
     for m in mappings.get("mappings"):
@@ -318,4 +318,4 @@ def validate_mapping(dictionary_url, mapping_file):
     if len(recorded_errors) > 0:
         return recorded_errors
 
-    return check_mapping_constrains(mappings, model, recorded_errors)
+    return check_mapping_constraints(mappings, model, recorded_errors)
