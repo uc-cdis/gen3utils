@@ -132,7 +132,11 @@ def manifest_version(manifest_versions, service):
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version):
-                logger.warning("  {} is on a branch: not validating".format(service))
+                logger.warning(
+                    "  {} is on a branch ({}): not validating".format(
+                        service, service_version
+                    )
+                )
             return service_version
 
 
@@ -251,6 +255,11 @@ def version_requirement_validation(
             ok = False
             continue
 
+        if version_is_branch(service_version):
+            # ignoring service on branch - user was already informed of this
+            # by the log in `manifest_version()`
+            continue
+
         if (
             "min" not in service_requirement[required_service]
             and "max" not in service_requirement[required_service]
@@ -259,7 +268,12 @@ def version_requirement_validation(
                 assert_and_log(
                     version.parse(service_requirement[required_service])
                     <= version.parse(service_version),
-                    required_service + " version is not as expected in manifest",
+                    'Service "{}" version "{}" does not respect requirement "{}" for "{}"'.format(
+                        required_service,
+                        service_version,
+                        service_requirement,
+                        current_validation,
+                    ),
                 )
                 and ok
             )
@@ -273,7 +287,12 @@ def version_requirement_validation(
                     <= version.parse(service_version)
                     and version.parse(service_version)
                     < version.parse(service_requirement[required_service]["max"]),
-                    required_service + " version is not as expected in manifest",
+                    'Service "{}" version "{}" does not respect requirement "{}" for "{}"'.format(
+                        required_service,
+                        service_version,
+                        service_requirement,
+                        current_validation,
+                    ),
                 )
                 and ok
             )
