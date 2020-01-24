@@ -1,10 +1,9 @@
 from collections import defaultdict
-
 import yaml
 import re
+
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
-from gen3utils.assertion import assert_and_log
 
 
 class Prop:
@@ -264,7 +263,7 @@ def check_mapping_format(mappings, recorded_errors):
     # TODO add more checks to this
     if "mappings" not in mappings:
         recorded_errors.append(
-            MappingError("eltMapping file does not contain 'mappings'", "format")
+            MappingError("etlMapping file does not contain 'mappings'", "format")
         )
         return recorded_errors
     for m in mappings.get("mappings"):
