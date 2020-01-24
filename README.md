@@ -12,9 +12,7 @@ gen3utils validate-manifest cdis-manifest/*/manifest.json
 
 The validation settings can be updated by modifying [this file](gen3utils/manifest/validation_config.yaml).
 
-## :construction: etlMapping.yaml validation :construction:
-
-> This feature is still in development!
+## etlMapping.yaml validation
 
 Validate an `etlMapping.yaml` file against the dictionary URL specified in a `manifest.json` file:
 ```
