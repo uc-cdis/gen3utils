@@ -20,3 +20,4 @@ gen3git = "~0.2.3"
 packaging = "~20.0"
 psqlgraph = "3.0.0"
 pyyaml = ">=5.1"
+six = ">=1.12.0" # for psqlgraph
