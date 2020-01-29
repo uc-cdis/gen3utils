@@ -64,7 +64,7 @@ versions:
   needs:
     wts: "*"
     ambassador: "*"
-  desc: "hatchery requires wts, manifestservice and ambassador"
+  desc: "hatchery requires wts and ambassador"
 - sower: "*"
   needs:
     guppy: "*"
