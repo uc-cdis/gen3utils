@@ -54,10 +54,23 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
         url = file_info["raw_url"]
         old_file, new_file = get_files(get_master_url(url), url, headers)
         new_versions_block = new_file.get("versions", {})
+        new_is_nde_portal = "data-ecosystem-portal" in new_versions_block.get(
+            "portal", ""
+        )
+
         if old_file:
             old_versions_block = old_file.get("versions", {})
+            old_is_nde_portal = "data-ecosystem-portal" in old_versions_block.get(
+                "portal", ""
+            )
+            # we only compare portal versions from the same repo
+            compared_versions = compare_versions_blocks(
+                old_versions_block,
+                new_versions_block,
+                old_is_nde_portal == new_is_nde_portal,
+            )
             deployment_changes = get_deployment_changes(
-                compare_versions_blocks(old_versions_block, new_versions_block), token
+                compared_versions, token, new_is_nde_portal
             )
         else:
             # if this is a new file, there's nothing to compare
@@ -111,7 +124,7 @@ def get_files(master_url, pr_url, headers):
     return old_file, new_file
 
 
-def compare_versions_blocks(old_versions_block, new_versions_block):
+def compare_versions_blocks(old_versions_block, new_versions_block, check_portal):
     """
     Returns a dict:
     {
@@ -126,6 +139,10 @@ def compare_versions_blocks(old_versions_block, new_versions_block):
 
     res = {}
     for service in services:
+        if service == "portal" and not check_portal:
+            # skip if portal versions are not from the same repo
+            continue
+
         old_version = old_versions_block.get(service)
         new_version = new_versions_block.get(service)
         if (
@@ -149,7 +166,7 @@ def compare_versions_blocks(old_versions_block, new_versions_block):
     return res
 
 
-def get_deployment_changes(versions_dict, token):
+def get_deployment_changes(versions_dict, token, is_nde_portal):
     """
     Uses the gen3git utility to get the release notes between the old and new
     versions for each service, and returns the deployment changes only.
@@ -178,7 +195,10 @@ def get_deployment_changes(versions_dict, token):
             and not version_is_branch(versions["new"])
             and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
-            repo_name = "data-portal" if service == "portal" else service
+            repo_name = service
+            if service == "portal":
+                repo_name = "data-ecosystem-portal" if is_nde_portal else "data-portal"
+
             args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
             try:
                 release_notes = gen3git.main(args)

@@ -27,7 +27,7 @@ def test_compare(monkeypatch):
         "revproxy": "quay.io/cdis/nginx:1.15.5-ctds",  # branch to ignore
     }
 
-    compared = compare_versions_blocks(old_versions, new_versions)
+    compared = compare_versions_blocks(old_versions, new_versions, True)
     print("Compared versions:", compared)
 
     assert "arborist" in compared
