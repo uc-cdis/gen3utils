@@ -196,8 +196,15 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
             and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
             repo_name = service
+
+            # update the repo name when the service name in the
+            # manifest "versions" block is not the same as the repo name
             if service == "portal":
                 repo_name = "data-ecosystem-portal" if is_nde_portal else "data-portal"
+            if service == "spark":
+                repo_name = "gen3-spark"
+            if service == "wts":
+                repo_name = "workspace-token-service"
 
             args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
             try:
