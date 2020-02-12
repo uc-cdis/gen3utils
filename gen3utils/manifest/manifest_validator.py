@@ -60,11 +60,12 @@ def validate_manifest_block(manifest, blocks_requirements):
     for service_name, block in blocks_requirements.items():
         if service_name in manifest["versions"]:
             # Validation for all services has requirement in validation_config.
-            should_check_has = "has" in block
             block_requirement_version = manifest_version(
                 manifest["versions"], service_name
             )
-            if "version" in block and not version_is_branch(block_requirement_version):
+            is_branch = version_is_branch(block_requirement_version)
+            should_check_has = "has" in block and not is_branch
+            if "version" in block and not is_branch:
                 # If we have version requirement for a service, min or max is required.
                 # We are not validating branch or master branch
                 # min: Version in manifest is equal or greater than the verson in validation_config
@@ -133,7 +134,7 @@ def manifest_version(manifest_versions, service):
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version):
                 logger.warning(
-                    "  {} is on a branch ({}): not validating".format(
+                    "{} is on a branch ({}): not validating".format(
                         service, service_version
                     )
                 )
@@ -149,10 +150,19 @@ def version_is_branch(version):
         version (string)
 
     Returns:
-        bool: True if version only contains digits and dots
+        bool: True if version only contains digits and dots BUT is
+            not a release tag in format <dddd.dd>
     """
-    reg = re.compile("^[0-9]+(.[0-9]+)*$")
-    return not bool(reg.match(str(version)))
+    # check if it looks like semantic versioning
+    reg = re.compile("^[0-9]+[.[0-9]+]*$")
+    is_branch = not bool(reg.match(str(version)))
+
+    # check if it's a release tag
+    if not is_branch:
+        reg = re.compile("^[0-9]{4}.[0-9]{2}$")
+        is_branch = bool(reg.match(str(version)))
+
+    return is_branch
 
 
 def versions_validation(manifest_versions, versions_requirements):
