@@ -191,8 +191,8 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
         # only get the deployment changes if the new version is more
         # recent than the old version. ignore services on a branch
         if (
-            not version_is_branch(versions["old"])
-            and not version_is_branch(versions["new"])
+            not version_is_branch(versions["old"], release_tag_are_branches=False)
+            and not version_is_branch(versions["new"], release_tag_are_branches=False)
             and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
             repo_name = service
