@@ -232,7 +232,9 @@ def check_services_on_branch(versions_block):
             # version without ":" is not usable.
             continue
         version = version.split(":")[1]
-        if service not in IGNORE_SERVICE_ON_BRANCH and version_is_branch(version):
+        if service not in IGNORE_SERVICE_ON_BRANCH and version_is_branch(
+            version, release_tag_are_branches=False
+        ):
             services_on_branch.append(service)
     return services_on_branch
 
