@@ -144,10 +144,16 @@ def manifest_version(manifest_versions, service):
                 return service_version
 
 
-def version_is_branch(version):
+def version_is_branch(version, release_tag_are_branches=True):
     """
     Args:
         version (string)
+        release_tag_are_branches (bool): whether release tags in format
+            <dddd.dd> should be considered branches or not.
+            - For manifest validation, we want to skip validation for release
+            tags because the semantic versions comparison would not work.
+            - For checking deployment changes, we do want release tags to be
+            included like other tags.
 
     Returns:
         bool: True if version only contains digits and dots BUT is
@@ -158,7 +164,7 @@ def version_is_branch(version):
     is_branch = not bool(reg.match(str(version)))
 
     # check if it's a release tag
-    if not is_branch:
+    if not is_branch and release_tag_are_branches:
         reg = re.compile("^[0-9]{4}.[0-9]{2}$")
         is_branch = bool(reg.match(str(version)))
 
