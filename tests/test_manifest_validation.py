@@ -1,25 +1,25 @@
 from gen3utils.manifest.manifest_validator import (
     validate_manifest_block,
     versions_validation,
-    manifest_version,
+    get_manifest_version,
     version_is_branch,
 )
 
 
-def test_manifest_version():
+def test_get_manifest_version():
     versions_block = {
         "indexd": "quay.io/cdis/indexd:1.0.0",
         "arborist": "quay.io/cdis/arborist:master",
         "fence": "quay.io/cdis/fence:feat_mybranch",
     }
 
-    indexd_version = manifest_version(versions_block, "indexd")
+    indexd_version = get_manifest_version(versions_block, "indexd")
     assert str(indexd_version) == "1.0.0"
 
-    arborist_version = manifest_version(versions_block, "arborist")
+    arborist_version = get_manifest_version(versions_block, "arborist")
     assert str(arborist_version) == "master"
 
-    fence_version = manifest_version(versions_block, "fence")
+    fence_version = get_manifest_version(versions_block, "fence")
     assert str(fence_version) == "feat_mybranch"
 
 
@@ -27,6 +27,12 @@ def test_service_is_on_branch():
     assert version_is_branch("master")
     assert version_is_branch("feat_new-thing")
     assert not version_is_branch("1.2.14.8")
+
+
+def test_release_tag():
+    versions_block = {"arborist": "quay.io/cdis/arborist:2020.02"}
+    assert get_manifest_version(versions_block, "arborist") == "2020.02"
+    assert version_is_branch("2020.02")
 
 
 def test_versions_validation_needs(manifest_validation_config):
