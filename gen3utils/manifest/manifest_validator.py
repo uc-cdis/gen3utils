@@ -60,7 +60,7 @@ def validate_manifest_block(manifest, blocks_requirements):
     for service_name, block in blocks_requirements.items():
         if service_name in manifest["versions"]:
             # Validation for all services has requirement in validation_config.
-            block_requirement_version = manifest_version(
+            block_requirement_version = get_manifest_version(
                 manifest["versions"], service_name
             )
             is_branch = version_is_branch(block_requirement_version)
@@ -117,7 +117,7 @@ def validate_manifest_block(manifest, blocks_requirements):
     return ok
 
 
-def manifest_version(manifest_versions, service):
+def get_manifest_version(manifest_versions, service):
     """
     Get the service version from cdis-manifest
         Arg: 
@@ -129,7 +129,7 @@ def manifest_version(manifest_versions, service):
     for manifest_version in manifest_versions:
         if manifest_version == service:
             # if this fails, make sure you check the service is in the manifest before
-            # calling manifest_version()! it should never happen
+            # calling get_manifest_version()! it should never happen
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version):
@@ -138,6 +138,7 @@ def manifest_version(manifest_versions, service):
                         service, service_version
                     )
                 )
+                return service_version
             try:
                 return version.parse(service_version)
             except:
@@ -189,7 +190,7 @@ def versions_validation(manifest_versions, versions_requirements):
         requirement_list = versions_requirement["needs"]
         requirement_key_list = list(requirement_list.keys())
         requirement_key = list(versions_requirement)[0]
-        actual_version = manifest_version(manifest_versions, requirement_key)
+        actual_version = get_manifest_version(manifest_versions, requirement_key)
 
         if requirement_key in manifest_versions and not version_is_branch(
             actual_version
@@ -263,7 +264,7 @@ def version_requirement_validation(
 
     for required_service in requirement_key_list:
 
-        actual_version = manifest_version(versions_manifest, required_service)
+        actual_version = get_manifest_version(versions_manifest, required_service)
 
         if not actual_version:
             logger.error(
