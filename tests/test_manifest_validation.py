@@ -33,6 +33,7 @@ def test_release_tag():
     versions_block = {"arborist": "quay.io/cdis/arborist:2020.02"}
     assert get_manifest_version(versions_block, "arborist") == "2020.02"
     assert version_is_branch("2020.02")
+    assert not version_is_branch("2020.02", release_tag_are_branches=False)
 
 
 def test_versions_validation_needs(manifest_validation_config):
