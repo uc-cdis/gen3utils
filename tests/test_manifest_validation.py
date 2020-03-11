@@ -89,10 +89,6 @@ def test_versions_validation_needs(manifest_validation_config):
     ok = versions_validation(versions_block, manifest_validation_config["versions"])
     assert not ok, "sower + guppy should not pass validation"
 
-    versions_block = {"sower": "quay.io/cdis/sower:0.3.0"}
-    ok = versions_validation(versions_block, manifest_validation_config["versions"])
-    assert not ok, "sower without guppy should not pass validation"
-
 
 def test_versions_comparison(manifest_validation_config):
     """
