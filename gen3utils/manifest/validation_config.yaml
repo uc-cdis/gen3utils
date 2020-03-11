@@ -65,10 +65,6 @@ versions:
     wts: "*"
     ambassador: "*"
   desc: "hatchery requires wts and ambassador"
-- sower: "*"
-  needs:
-    guppy: "*"
-  desc: "sower requires guppy"
 - guppy: "*"
   needs:
     aws-es-proxy: "*"
