@@ -201,10 +201,12 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
             # manifest "versions" block is not the same as the repo name
             if service == "portal":
                 repo_name = "data-ecosystem-portal" if is_nde_portal else "data-portal"
-            if service == "spark":
+            elif service == "spark":
                 repo_name = "gen3-spark"
-            if service == "wts":
+            elif service == "wts":
                 repo_name = "workspace-token-service"
+            elif service == "covid19-etl":
+                repo_name = "covid19-tools"
 
             args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
             try:
