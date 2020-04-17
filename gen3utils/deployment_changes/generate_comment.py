@@ -205,6 +205,8 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 repo_name = "gen3-spark"
             elif service == "wts":
                 repo_name = "workspace-token-service"
+            elif service == "dashboard":
+                repo_name = "gen3-statics"
             elif service.startswith("covid19-") and service.endswith("-etl"):
                 repo_name = "covid19-tools"
 
