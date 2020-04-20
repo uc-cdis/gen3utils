@@ -46,7 +46,7 @@ setup(
         "dictionaryutils~=3.0.0",
         "gen3datamodel~=3.0.0",
         "gen3dictionary~=2.0.1",
-        "gen3git~=0.2.3",
+        "gen3git~=0.3.3",
         "packaging~=20.0",
         "psqlgraph~=3.0.0",
         "six~=1.12.0",  # for psqlgraph

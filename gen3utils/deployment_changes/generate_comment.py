@@ -207,16 +207,23 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 repo_name = "workspace-token-service"
             elif service == "dashboard":
                 repo_name = "gen3-statics"
-            elif service.startswith("covid19-") and service.endswith("-etl"):
+            elif (
+                service.startswith("covid19-") and service.endswith("-etl")
+            ) or service == "nb-etl":
                 repo_name = "covid19-tools"
 
-            args = Gen3GitArgs("uc-cdis/" + repo_name, versions["old"], versions["new"])
+            repo_name = "uc-cdis/" + repo_name
+            args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
             try:
                 release_notes = gen3git.main(args)
                 if not release_notes:
                     raise Exception("gen3git did not return release notes")
             except:
-                logger.error("Unable to get release notes with gen3git:")
+                logger.error(
+                    "While checking service '{}', repo '{}', unable to get release notes with gen3git:".format(
+                        service, repo_name
+                    )
+                )
                 raise
             notes = release_notes.get("deployment changes")
             if notes:
