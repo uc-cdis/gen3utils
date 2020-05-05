@@ -287,7 +287,7 @@ def check_mapping_constraints(mappings, model, recorded_errors):
         if category is not None:
             first_categorized_node = categories_to_labels.get(category)[0]
         else:
-            first_categorized_node = m.get("doc_type")
+            first_categorized_node = m.get("root")
         for key, value in m.items():
             if key.endswith("props"):
                 root_path = (
