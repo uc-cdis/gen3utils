@@ -15,7 +15,7 @@ def test_compare(monkeypatch):
         "peregrine": "quay.io/cdis/peregrine:2.0.0",
         "sheepdog": "quay.io/cdis/sheepdog:master",  # old and new on branch
         "guppy": "quay.io/cdis/pidgin:2.0.0",  # deleted service
-        "revproxy": "quay.io/cdis/nginx:1.15.5-ctds",
+        "ambassador": "quay.io/cdis/hello-branch",
     }
     new_versions = {
         "arborist": "quay.io/cdis/arborist:3.0.0",  # new > old
@@ -24,7 +24,7 @@ def test_compare(monkeypatch):
         "peregrine": "quay.io/cdis/peregrine:feat_something",  # new on branch
         "sheepdog": "quay.io/cdis/sheepdog:master",  # old and new on branch
         "pidgin": "quay.io/cdis/pidgin:2.0.0",  # new service
-        "revproxy": "quay.io/cdis/nginx:1.15.5-ctds",  # branch to ignore
+        "ambassador": "quay.io/cdis/hello-branch",  # branch to ignore
     }
 
     compared = compare_versions_blocks(old_versions, new_versions, True)
@@ -45,7 +45,7 @@ def test_compare(monkeypatch):
     assert "sheepdog" not in compared
     assert "guppy" not in compared
     assert "pidgin" not in compared
-    assert "revproxy" not in compared
+    assert "ambassador" not in compared
 
     services_on_branch = check_services_on_branch(new_versions)
     print("Services on branch:", services_on_branch)
