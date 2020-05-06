@@ -14,7 +14,7 @@ logger = get_logger("comment-deployment-changes", log_level="info")
 
 
 # whitelist of services to ignore when checking if services are on a branch
-IGNORE_SERVICE_ON_BRANCH = ["revproxy", "jupyterhub"]
+IGNORE_SERVICE_ON_BRANCH = ["jupyterhub"]
 
 # update this config if the service name in the manifest "versions"
 # block is not the same as the repo name. services that are not
