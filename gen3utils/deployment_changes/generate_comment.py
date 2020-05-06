@@ -16,6 +16,19 @@ logger = get_logger("comment-deployment-changes", log_level="info")
 # whitelist of services to ignore when checking if services are on a branch
 IGNORE_SERVICE_ON_BRANCH = ["revproxy", "jupyterhub"]
 
+# update this config if the service name in the manifest "versions"
+# block is not the same as the repo name. services that are not
+# listed here are assumed to be in repo uc-cdis/<service name>.
+SERVICE_TO_REPO = {
+    "covid19-etl": "covid19-tools",
+    "dashboard": "gen3-statics",
+    "nb-etl": "covid19-tools",
+    "portal": "data-portal",
+    "revproxy": "docker-nginx",
+    "spark": "gen3-spark",
+    "wts": "workspace-token-service",
+}
+
 
 def comment_deployment_changes_on_pr(repository, pull_request_number):
     """
@@ -195,22 +208,12 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
             and not version_is_branch(versions["new"], release_tag_are_branches=False)
             and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
-            repo_name = service
+            # by default, assume the code lives in repo uc-cdis/<service name>
+            repo_name = SERVICE_TO_REPO.get(service, service)
 
-            # update the repo name when the service name in the
-            # manifest "versions" block is not the same as the repo name
-            if service == "portal":
-                repo_name = "data-ecosystem-portal" if is_nde_portal else "data-portal"
-            elif service == "spark":
-                repo_name = "gen3-spark"
-            elif service == "wts":
-                repo_name = "workspace-token-service"
-            elif service == "dashboard":
-                repo_name = "gen3-statics"
-            elif (
-                service.startswith("covid19-") and service.endswith("-etl")
-            ) or service == "nb-etl":
-                repo_name = "covid19-tools"
+            # repo names special cases
+            if service == "portal" and is_nde_portal:
+                repo_name = "data-ecosystem-portal"
 
             repo_name = "uc-cdis/" + repo_name
             args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
