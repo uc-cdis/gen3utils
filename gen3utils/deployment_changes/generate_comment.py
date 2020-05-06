@@ -13,8 +13,21 @@ from gen3utils.manifest.manifest_validator import version_is_branch
 logger = get_logger("comment-deployment-changes", log_level="info")
 
 
-# whitelist of services to ignore when checking if services are on a branch
-IGNORE_SERVICE_ON_BRANCH = ["revproxy", "jupyterhub"]
+# whitelist of services to ignore when checking tags and services on branch
+IGNORED_SERVICES = ["ambassador", "aws-es-proxy", "fluentd", "jupyterhub", "nb2"]
+
+# update this config if the service name in the manifest "versions"
+# block is not the same as the repo name. services that are not
+# listed here are assumed to be in repo uc-cdis/<service name>.
+SERVICE_TO_REPO = {
+    "covid19-etl": "covid19-tools",
+    "dashboard": "gen3-statics",
+    "nb-etl": "covid19-tools",
+    "portal": "data-portal",
+    "revproxy": "docker-nginx",
+    "spark": "gen3-spark",
+    "wts": "workspace-token-service",
+}
 
 
 def comment_deployment_changes_on_pr(repository, pull_request_number):
@@ -58,8 +71,14 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
             "portal", ""
         )
 
+        for service_name in IGNORED_SERVICES:
+            new_versions_block.pop(service_name, None)
+
         if old_file:
             old_versions_block = old_file.get("versions", {})
+            for service_name in IGNORED_SERVICES:
+                old_versions_block.pop(service_name, None)
+
             old_is_nde_portal = "data-ecosystem-portal" in old_versions_block.get(
                 "portal", ""
             )
@@ -195,22 +214,12 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
             and not version_is_branch(versions["new"], release_tag_are_branches=False)
             and version.parse(versions["old"]) < version.parse(versions["new"])
         ):
-            repo_name = service
+            # by default, assume the code lives in repo uc-cdis/<service name>
+            repo_name = SERVICE_TO_REPO.get(service, service)
 
-            # update the repo name when the service name in the
-            # manifest "versions" block is not the same as the repo name
-            if service == "portal":
-                repo_name = "data-ecosystem-portal" if is_nde_portal else "data-portal"
-            elif service == "spark":
-                repo_name = "gen3-spark"
-            elif service == "wts":
-                repo_name = "workspace-token-service"
-            elif service == "dashboard":
-                repo_name = "gen3-statics"
-            elif (
-                service.startswith("covid19-") and service.endswith("-etl")
-            ) or service == "nb-etl":
-                repo_name = "covid19-tools"
+            # repo names special cases
+            if service == "portal" and is_nde_portal:
+                repo_name = "data-ecosystem-portal"
 
             repo_name = "uc-cdis/" + repo_name
             args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
@@ -233,7 +242,7 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
 
 def check_services_on_branch(versions_block):
     """
-    Returns the list of all services that are on a branch, except for the services listed in the IGNORE_SERVICE_ON_BRANCH whitelist.
+    Returns the list of all services that are on a branch.
     """
     services_on_branch = []
     for service in versions_block:
@@ -243,9 +252,7 @@ def check_services_on_branch(versions_block):
             # version without ":" is not usable.
             continue
         version = version.split(":")[1]
-        if service not in IGNORE_SERVICE_ON_BRANCH and version_is_branch(
-            version, release_tag_are_branches=False
-        ):
+        if version_is_branch(version, release_tag_are_branches=False):
             services_on_branch.append(service)
     return services_on_branch
 
