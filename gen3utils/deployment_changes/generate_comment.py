@@ -236,7 +236,7 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 raise
             notes = release_notes.get("deployment changes")
             if notes:
-                res[service] = update_pr_links(service, notes)
+                res[service] = update_pr_links(repo_name, notes)
     return res
 
 
@@ -257,7 +257,7 @@ def check_services_on_branch(versions_block):
     return services_on_branch
 
 
-def update_pr_links(service, notes_list):
+def update_pr_links(repo_name, notes_list):
     """
     Replace the internal repo PR link with the external repo PR link
     in each release note.
@@ -269,7 +269,7 @@ def update_pr_links(service, notes_list):
         match = matcher.match(note)
         if match:
             internal_pr_number = "#{}".format(match.groupdict()["pr_number"])
-            external_pr_number = "uc-cdis/{}{}".format(service, internal_pr_number)
+            external_pr_number = "uc-cdis/{}{}".format(repo_name, internal_pr_number)
             result.append(note.replace(internal_pr_number, external_pr_number))
         else:
             result.append(note)
