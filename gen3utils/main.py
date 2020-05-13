@@ -62,14 +62,14 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
         recorded_errors = validate_mapping(dictionary_url, etl_mapping_file)
 
         if recorded_errors:
-            logger.error("  ETL mapping validation failed:")
+            print("  ETL mapping validation failed:")
             for err in recorded_errors:
-                logger.error("  - {}".format(err))
+                print("  - {}".format(err))
             raise AssertionError(
                 "ETL mapping validation failed. See errors in previous logs."
             )
         else:
-            logger.info("  OK!")
+            print("  OK!")
 
 
 @main.command()
