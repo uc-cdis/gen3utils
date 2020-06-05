@@ -27,6 +27,7 @@ SERVICE_TO_REPO = {
     "revproxy": "docker-nginx",
     "spark": "gen3-spark",
     "wts": "workspace-token-service",
+    "metadata": "metadata-service",
 }
 
 
