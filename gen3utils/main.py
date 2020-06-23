@@ -65,7 +65,9 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
             print("  ETL mapping validation failed:")
             for err in recorded_errors:
                 print("  - {}".format(err))
-            exit(1)
+            raise AssertionError(
+                "ETL mapping validation failed. See errors in previous logs."
+            )
         else:
             print("  OK!")
 
