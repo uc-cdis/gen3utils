@@ -28,6 +28,7 @@ SERVICE_TO_REPO = {
     "spark": "gen3-spark",
     "wts": "workspace-token-service",
     "metadata": "metadata-service",
+    "data-ingestion-pipeline": "bdcat-data-ingestion",
 }
 
 
