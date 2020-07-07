@@ -10,12 +10,13 @@ python:
 # - pipenv install --dev --deploy
 # - pipenv graph
 install:
-- 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python'
+- 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_PREVIEW=1 python'
 - source $HOME/.poetry/env
 - which poetry
 - poetry install -v
 script:
 - poetry run pytest -vv tests/
+- poetry publish --dry-run
 # - pipenv run pytest -vv --cov=gen3utils --cov-report xml ./tests
 # after_script:
 # - pipenv run python-codacy-coverage -r coverage.xml
