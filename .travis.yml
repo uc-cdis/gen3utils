@@ -16,6 +16,7 @@ install:
 - poetry install -v
 script:
 - poetry run pytest -vv tests/
+- poetry build -f sdist
 - poetry publish --dry-run
 # - pipenv run pytest -vv --cov=gen3utils --cov-report xml ./tests
 # after_script:
