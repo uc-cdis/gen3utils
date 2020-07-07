@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "gen3utils"
+version = "0.1.0"
+description = "Utils for gen3"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "3.6"
+dictionaryutils = "3.0.0"
+gen3datamodel = "3.0.0"
+gen3dictionary = "2.0.1"
+gen3git = "~0.3.3"
+packaging = "~20.0"
+psqlgraph = "3.0.0"
+pyyaml = ">=5.1"
+six = ">=1.12.0"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=3.6"
+pytest-cov = "*"
+codacy-coverage = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
