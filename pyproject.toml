@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "gen3utils"
-version = "0.1.0"
-description = "Utils for gen3"
-authors = ["Your Name <you@example.com>"]
+version = "0.4.14"
+description = "Utils for Gen3 commons management"
+authors = ["CTDS UChicago <cdis@uchicago.edu>"]
+license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "3.6"
