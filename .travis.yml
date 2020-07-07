@@ -16,24 +16,22 @@ install:
 - poetry install -v
 script:
 - poetry run pytest -vv tests/
-- poetry build -f sdist
-- poetry publish --dry-run
 # - pipenv run pytest -vv --cov=gen3utils --cov-report xml ./tests
 # after_script:
 # - pipenv run python-codacy-coverage -r coverage.xml
-# before_deploy:
-# - sed -i.bak "s/=get_version()/='$TRAVIS_TAG'/g" setup.py
-# - cat setup.py
-# - if [ $(python setup.py --version) == '0.0.0' ]; then travis_terminate 1; fi
-# deploy:
-  # provider: pypi
-  # user: uc-ctds
-  # skip_existing: true
-  # skip_cleanup: true
-  # on:
-    # repo: uc-cdis/gen3utils
-    # tags: true
-  # password:
-    # secure: hN2GR0mCufwG6d+LaJ2EoOP2WH1DhaO7AgVN6RwEeetdlfhOv55dpfYFJkeZKyDKXj+gsTFB38h0JrnDEjoJE2Rp/1+pbVbotDETe3eO+mXiG/gtr+qt9Q0leQpy1SanQG7sBu/vA4RZ/D6yRgNXgmJhjaDkO9CjoyBlaOK5ykkWwL9VzjTO2cjW3waYHaBhLJG6JFRp3NwRnVRqYaWoGifrzDUbtsecW5wTnPY4HYJEz/K8J/bQch/OP+MYxm0gwgEwX9QxRAr1BbUuZmEIuav7LELQ8Y50tN2QO2TS9C3vKy68270JMrdl88XpwV60e3KwyTezK2c7SYQwDMYcpSR3kxEAPCT3pJ1A1+G1RpcLVRDzqMP3kRw/kTlK/G4DsiVhfY9IKL8xPoA1Xb/8YBmxdJvM/kTwzLxSUKfZIQxZ80ix9Am/6AQVp3beaagfl9Jtl8okmcHrS+y1CeFcJBzuBsIbnckY9VqPNg89hfo9zNQ9oOSKXcjxkSESzpmrJrMehcndtNKizlN7WESdpgs3MWJXXbp9c4gsVT2Dr3xyMj1S7Jat2ZY3l9x8LU4NvRPjS+JtxIOo+j8G0o5/rR3YXw5PDFppzav1hKiNInPziQ1C9w1S3j8qqyl8yS3b6a9/KoXg+bIT+a1s9D2cVyicA1RJuNqA3ix1SmESgH0=
-# after_deploy:
-# - gen3git release
+before_deploy:
+- poetry build -f sdist
+deploy:
+  provider: script
+  script: poetry publish --dry-run
+  user: uc-ctds
+  skip_existing: true
+  skip_cleanup: true
+  on:
+    repo: uc-cdis/gen3utils
+    tags: true
+  password:
+    secure: hN2GR0mCufwG6d+LaJ2EoOP2WH1DhaO7AgVN6RwEeetdlfhOv55dpfYFJkeZKyDKXj+gsTFB38h0JrnDEjoJE2Rp/1+pbVbotDETe3eO+mXiG/gtr+qt9Q0leQpy1SanQG7sBu/vA4RZ/D6yRgNXgmJhjaDkO9CjoyBlaOK5ykkWwL9VzjTO2cjW3waYHaBhLJG6JFRp3NwRnVRqYaWoGifrzDUbtsecW5wTnPY4HYJEz/K8J/bQch/OP+MYxm0gwgEwX9QxRAr1BbUuZmEIuav7LELQ8Y50tN2QO2TS9C3vKy68270JMrdl88XpwV60e3KwyTezK2c7SYQwDMYcpSR3kxEAPCT3pJ1A1+G1RpcLVRDzqMP3kRw/kTlK/G4DsiVhfY9IKL8xPoA1Xb/8YBmxdJvM/kTwzLxSUKfZIQxZ80ix9Am/6AQVp3beaagfl9Jtl8okmcHrS+y1CeFcJBzuBsIbnckY9VqPNg89hfo9zNQ9oOSKXcjxkSESzpmrJrMehcndtNKizlN7WESdpgs3MWJXXbp9c4gsVT2Dr3xyMj1S7Jat2ZY3l9x8LU4NvRPjS+JtxIOo+j8G0o5/rR3YXw5PDFppzav1hKiNInPziQ1C9w1S3j8qqyl8yS3b6a9/KoXg+bIT+a1s9D2cVyicA1RJuNqA3ix1SmESgH0= # pragma: allowlist secret
+after_deploy:
+- poetry gen3git gen
+- cat release_notes.txt
