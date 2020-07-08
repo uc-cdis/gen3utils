@@ -27,7 +27,7 @@ before_deploy:
 - poetry build -f sdist
 deploy:
   provider: script
-  script: poetry -vv publish --dry-run
+  script: poetry -vvv publish --dry-run
   user: uc-ctds
   skip_existing: true
   skip_cleanup: true
