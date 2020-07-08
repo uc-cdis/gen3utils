@@ -4,7 +4,8 @@ python:
 - 3.6
 env:
   global:
-  - PYPI_API_TOKEN=notreallyatoken
+  # - PYPI_API_TOKEN=notreallyatoken
+  - secure: Itx0URy34X8A5jLYrH8Q9NWaZ2FUqjT5pnUotUvS7c0fozNISyCoI4Bz246mT7tAx5qsdRiYSxRjT0R7DLPhxpJtRXtEirTMMJf8LQu2mAeUc7AhvwaxeKmR2GLA7obi7eAxjJBmJyd29mbzB4x/tIf6bqBt9+e/Msyy3VIURx44LhbJ/FXb/BK1a5tEY4uVBen9s9uLgYmYFeKLaWn2qJC2hyWNlIS7zlbpuMTD0gDTiHdUvw5FbbF8kV+R0TYz+bB3CP4IEMXd6Af8LlZ7NULDvvSLVeVqjUGT/aVOpbFbTlqGXSYkawhahnSyiTeDxagEltWotjl7aReSZvh34azefZX+8Sht1oCjYUXJEIV/ln5OkA/w5wkKmLYURWwIn2CvzM2SzuFwC4n3lm0FPpVksnfYyJUfsdKLckn1GVLXm2dv3qR/kV/wM1lUe+2ZTt/vXmr8XJIVHhVipzoFqD/fOjpJsN8W2dtK2f3PBZcwkFbAzQNou+kJK+SLS5v8ildni68k9r+4ka+nurb/UqC0OyOg0lzf04EPRuWfSKvP1RCvikSGxg9vDZDMiwTZCsw3sGLKKuDywFJiMc1hqWfhw2Y1lf+7/krUdK/VmPVtWAzrXgTRKQlVZoSzaKV5I9r27MFMgCR6zlTNiSsJSU/jTr7JMxSrCmTf5LBRQ1A= # pragma: allowlist secret
 # cache:
 # - pip
 # - apt
