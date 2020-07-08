@@ -13,7 +13,8 @@ env:
 # - pipenv install --dev --deploy
 # - pipenv graph
 install:
-- 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_PREVIEW=1 python'
+# - 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_PREVIEW=1 python'
+- 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python'
 - source $HOME/.poetry/env
 - which poetry
 - poetry install -v
@@ -23,11 +24,14 @@ script:
 # after_script:
 # - pipenv run python-codacy-coverage -r coverage.xml
 before_deploy:
-- poetry config pypi-token.pypi $PYPI_API_TOKEN
+- poetry config repositories.testpypi https://test.pypi.org/simple/
+# - poetry config pypi-token.pypi $PYPI_API_TOKEN
+- poetry config pypi-token.testpypi $PYPI_API_TOKEN
 - poetry build -f sdist
 deploy:
   provider: script
-  script: poetry publish -vvv --dry-run
+  # script: poetry publish -vvv --dry-run
+  script: poetry publish -r testpypi
   user: uc-ctds
   skip_existing: true
   skip_cleanup: true
