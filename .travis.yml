@@ -32,6 +32,7 @@ deploy:
   skip_existing: true
   skip_cleanup: true
   on:
+    all_branches: true # XXX need to remove
     repo: uc-cdis/gen3utils
     # tags: true
   password:
