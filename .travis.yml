@@ -24,7 +24,7 @@ script:
 # after_script:
 # - pipenv run python-codacy-coverage -r coverage.xml
 before_deploy:
-- poetry config repositories.testpypi https://test.pypi.org/simple
+- poetry config repositories.testpypi https://test.pypi.org/legacy/
 # - poetry config pypi-token.pypi $PYPI_API_TOKEN
 - poetry config pypi-token.testpypi $PYPI_API_TOKEN
 - poetry build -f sdist
