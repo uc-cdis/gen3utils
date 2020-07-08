@@ -2,6 +2,9 @@ dist: xenial
 language: python
 python:
 - 3.6
+env:
+  global:
+  - PYPI_API_TOKEN=notreallyatoken
 # cache:
 # - pip
 # - apt
