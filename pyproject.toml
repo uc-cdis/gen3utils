@@ -9,20 +9,19 @@ repository = "https://github.com/uc-cdis/gen3utils"
 
 [tool.poetry.dependencies]
 python = "3.6"
-dictionaryutils = "3.0.0"
-gen3datamodel = "3.0.0"
-gen3dictionary = "2.0.1"
+cdislogging = "~=1.0.0"
+click = "*"
+dictionaryutils = "~3.0.0"
+gen3datamodel = "~3.0.0"
+gen3dictionary = "~2.0.1"
 gen3git = "~0.3.3"
 packaging = "~20.0"
-psqlgraph = "3.0.0"
-pyyaml = ">=5.1"
-six = ">=1.12.0"
-click = "^7.1.2"
+psqlgraph = "~3.0.0"
+pyyaml = "~5.1"
+six = "~1.12.0"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=3.6"
-pytest-cov = "*"
-codacy-coverage = "*"
 
 [build-system]
 requires = ["poetry>=0.12"]
