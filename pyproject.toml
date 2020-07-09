@@ -11,8 +11,6 @@ include = [
   "gen3utils/manifest/validation_config.yaml",
   "LICENSE",
   "NOTICE",
-  "Pipfile",
-  "Pipfile.lock",
   "README.md",
 ]
 
