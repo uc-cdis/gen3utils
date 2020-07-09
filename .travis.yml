@@ -4,7 +4,7 @@ python:
 - 3.6
 env:
   global:
-  - secure: NmX+U1rDnBLjBpcrN7yyOgcT26BORaOy8A8hEDfoemaa61MxOu023Jza8uxXYBpy7WSfzeAOxNiV5QifBFDkeuKMjFfUlsS71ZgnzJnGOX+IH6Gt2vQNPJz2Ueq4y88FHb5TZcVSBoKhW/miDLP2Tsk9Auymx9OAJwPwiVLU1PP1h7lstk/p+fBF3InnVTsVDWG3cg2B0+Y19KaKAj3muOKJkUGp13GAFrwKdEDZeHXts2iVyFIy/y/MhiaSDr9olccaH7bAb5nQSctGP+B77RTkZjwWy4Dxb0qxWoKm38s2BDB41JTGEU3W8DDzUYBH1GaKwNT7Cty38ywOTeTBhXtYoObClT7Jldg1ZA7QYk+YGwBzj7K8ep+h7lOEOaYrX04ythJ1HFv+4KNXuBGbrgcrceo4r7foTx/GrrcP0NBHFsolV19jDf/3/DUvpElBtfqDqUhSNLcSN/zKsap3vho7wtUjRmDdJe7jU54f3Y2LMOEt2GqFXUB43rRqbbzgUQyOkM4Lm4WKyiuhHAn/Vikak6zSTs4/9s2oSa+z+6932ViK+NVWE3YNK6PF1qY76PlL+uSNWnTN+7seqzmROHZOpAj+7uR2Pbih/KOp2bJk3llYFVr4+PhaQFwbTRW+egzRQUTjCoZtrcJZ+V5+Rd67jPjn2pAKdEBrceKupHs= # pragma: allowlist secret
+  - secure: KY3stltR4M1obId8R1s98gUYdxCqZdfnUMJ+5qRiXIdMy+ZsyHlZ/cVtjpIqPBkmDVXRpC9sp66j7ipNl/WEA1Su5mkQSuec/h2d9aN57MrzXClPs4qSadyCvOfA8wjfKbuw6eTBvX6WF7UA6eC4nv07q+sAp2CuaMRm8fi5jbk9fcF+3QCFmd5ORuBXoVBRnU3lvsf3ih8l0ESxFfgjAfsuDoXYV9/8eyhknn9rpSHuX1lP0Ut/+Cs40bF8M3ujknA8GfdkMF9dRdSOvqyX7Jz4A/AiXKG69ZJXxR1XdZuZmdlMytjBw/XrSjNm/m2/gYca+MAPGA1/FEO20yf7a9VItJVBppO+QJ6QFZ+gB0vz7lRy88grAk1iFwi0+kMmXgcInjlb+iStw+MIbdBTzPW7AFkIEDqyN5XKhJgah8cFvYE0GOP/ROXr3AgBEvT3yj7kO+fHE7bmCkpjEaTIKkosb+/jTO3ty8YWHjT7NVaNFmX5i6gxKa3jbiSLtPkEsByNZOYtuIOWIkvnLOVNiC9Y9E6ZN0F+qiKinuDYqvmxx+HvHhJmjO+/E5DSh0cqgN3OFYUB/1kVEI/B+MaX/KbVdAA8KCdXvaClURcbBSZlD4nqOsGUcDmGbri/lMmG/9ozVrmlwyfZ6cfRapmBRouC6EcQ2FGLqZe4r3LYngc= # pragma: allowlist secret
 install:
 - 'curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python'
 - source $HOME/.poetry/env
@@ -13,16 +13,14 @@ install:
 script:
 - poetry run pytest -vv ./tests
 before_deploy:
-- poetry config repositories.testpypi https://test.pypi.org/legacy/
-- poetry config pypi-token.testpypi $PYPI_API_TOKEN
+- poetry config pypi-token.pypi $PYPI_API_TOKEN
 - poetry build -f sdist
 deploy:
   provider: script
-  script: poetry publish -n -vv -r testpypi
+  script: poetry publish -n -vv
   skip_cleanup: true
   on:
     repo: uc-cdis/gen3utils
     tags: true
 after_deploy:
-- poetry run gen3git gen
-- cat release_notes.txt
+- poetry run gen3git release
