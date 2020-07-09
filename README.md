@@ -28,9 +28,9 @@ pip install gen3utils
 gen3utils post-deployment-changes <username>/<repository> <pull request number>
 ```
 
-## Dev test
+## Running tests locally
 
 ```
-python setup.py install
-python -m pytest
+poetry install -vv
+poetry run pytest -vv ./tests
 ```
