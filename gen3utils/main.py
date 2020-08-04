@@ -59,6 +59,7 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
             logger.error("No dictionary URL in manifest {}".format(manifest_file))
             return
 
+        print("  Using dictionary: {}".format(dictionary_url))
         recorded_errors = validate_mapping(dictionary_url, etl_mapping_file)
 
         if recorded_errors:
