@@ -166,8 +166,8 @@ def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
         if fn != "count" and src not in nodes_with_props.get(path_items[-1], []):
             recorded_errors.append(
                 FieldError(
-                    'src field "{}" (declared in "{}") is not found in given dictionary.'.format(
-                        src, json_obj
+                    'src field "{}" (declared in "{}" "{}") is not found in given dictionary.'.format(
+                        src, path, json_obj
                     )
                 )
             )
