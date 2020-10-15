@@ -1,7 +1,9 @@
 from collections import defaultdict
+from packaging import version
 import yaml
 import re
 
+from gen3utils.manifest.manifest_validator import get_manifest_version
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
 
@@ -12,9 +14,12 @@ class Prop:
 
 
 class Index:
-    def __init__(self, name):
+    def __init__(self, name, underscore=False):
         self.name = name
-        id_name = "{}_id".format(name)
+        if underscore:
+            id_name = "_{}_id".format(name)
+        else:
+            id_name = "{}_id".format(name)
         self.props = {id_name: Prop(id_name)}
 
 
@@ -280,11 +285,11 @@ def check_mapping_format(mappings, recorded_errors):
     return recorded_errors
 
 
-def check_mapping_constraints(mappings, model, recorded_errors):
+def check_mapping_constraints(mappings, model, recorded_errors, underscore):
     labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
     indices = {}
     for m in mappings.get("mappings"):
-        index = Index(m.get("doc_type"))
+        index = Index(m.get("doc_type"), underscore)
         indices[index.name] = index
         category = m.get("category")
         if category is not None:
@@ -312,13 +317,25 @@ def check_mapping_constraints(mappings, model, recorded_errors):
     return recorded_errors
 
 
-def validate_mapping(dictionary_url, mapping_file):
+def validate_mapping(dictionary_url, mapping_file, manifest):
     dictionary, model = init_dictionary(dictionary_url)
     with open(mapping_file) as f:
         mappings = yaml.safe_load(f)
+
+    # If using tube >= 0.4.0 or >= 2020.10, {doc_type}_id fields have a prefixed underscore.
+    # https://github.com/uc-cdis/tube/releases/tag/0.4.0
+    tube_version = get_manifest_version(
+        manifest["versions"], "tube", release_tag_are_branches=False
+    )
+    if tube_version >= version.parse("0.4.0") or tube_version >= version.parse(
+        "2020.10"
+    ):
+        underscore = True
+    else:
+        underscore = False
 
     recorded_errors = check_mapping_format(mappings, [])
     if len(recorded_errors) > 0:
         return recorded_errors
 
-    return check_mapping_constraints(mappings, model, recorded_errors)
+    return check_mapping_constraints(mappings, model, recorded_errors, underscore)
