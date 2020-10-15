@@ -3,7 +3,7 @@ from packaging import version
 import yaml
 import re
 
-from gen3utils.manifest.manifest_validator import get_manifest_version
+from gen3utils.manifest.manifest_validator import get_manifest_version, is_release_tag
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
 
@@ -329,7 +329,9 @@ def validate_mapping(dictionary_url, mapping_file, manifest):
     )
     underscore = False
     if tube_version is not None:
-        if tube_version >= version.parse("0.4.0") or tube_version >= version.parse("2020.10"):
+        if not is_release_tag(tube_version) and tube_version >= version.parse("0.4.0"):
+            underscore = True
+        elif tube_version >= version.parse("2020.10"):
             underscore = True
 
     recorded_errors = check_mapping_format(mappings, [])

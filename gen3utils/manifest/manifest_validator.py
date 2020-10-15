@@ -145,6 +145,17 @@ def get_manifest_version(manifest_versions, service, release_tag_are_branches=Tr
                 return service_version
 
 
+def is_release_tag(parsed_version):
+    """
+    Args:
+        parsed_version: releases.version
+    Returns:
+        bool: True if version's major number is >= 2019. This is true of
+        our current monthly release versions (e.g. 2020.05, 2019.11) but not
+        true of our standard semver versions (e.g. 2.33.0)
+    """
+    return parsed_version >= version.parse("2019.0")
+
 def version_is_branch(version, release_tag_are_branches=True):
     """
     Args:
