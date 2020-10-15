@@ -156,6 +156,7 @@ def is_release_tag(parsed_version):
     """
     return parsed_version >= version.parse("2019.0")
 
+
 def version_is_branch(version, release_tag_are_branches=True):
     """
     Args:

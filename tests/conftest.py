@@ -26,6 +26,7 @@ def etl_mapping_validation_dict():
 def etl_mapping_validation_mapping():
     return "tests/data/etlMapping.yaml"
 
+
 @pytest.fixture(scope="session")
 def etl_mapping_validation_manifest():
     with open("tests/data/manifest.json") as f:
