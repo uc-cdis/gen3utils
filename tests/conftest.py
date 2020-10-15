@@ -1,6 +1,7 @@
 import os
 import pytest
 import yaml
+import json
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +25,11 @@ def etl_mapping_validation_dict():
 @pytest.fixture(scope="session")
 def etl_mapping_validation_mapping():
     return "tests/data/etlMapping.yaml"
+
+@pytest.fixture(scope="session")
+def etl_mapping_validation_manifest():
+    with open("tests/data/manifest.json") as f:
+        return json.load(f)
 
 
 @pytest.fixture(scope="session")

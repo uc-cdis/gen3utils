@@ -327,12 +327,10 @@ def validate_mapping(dictionary_url, mapping_file, manifest):
     tube_version = get_manifest_version(
         manifest["versions"], "tube", release_tag_are_branches=False
     )
-    if tube_version >= version.parse("0.4.0") or tube_version >= version.parse(
-        "2020.10"
-    ):
-        underscore = True
-    else:
-        underscore = False
+    underscore = False
+    if tube_version is not None:
+        if tube_version >= version.parse("0.4.0") or tube_version >= version.parse("2020.10"):
+            underscore = True
 
     recorded_errors = check_mapping_format(mappings, [])
     if len(recorded_errors) > 0:
