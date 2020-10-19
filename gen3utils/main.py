@@ -60,7 +60,7 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
             return
 
         print("  Using dictionary: {}".format(dictionary_url))
-        recorded_errors = validate_mapping(dictionary_url, etl_mapping_file)
+        recorded_errors = validate_mapping(dictionary_url, etl_mapping_file, manifest)
 
         if recorded_errors:
             print("  ETL mapping validation failed:")

@@ -124,7 +124,7 @@ def get_files(master_url, pr_url, headers):
     """
     Returns the contents of the current version of the file and
     of the modified version of the file in a tuple.
-    
+
     Args:
         master_url (str): URL to the current version of the file
         pr_url (str): URL to the modified version of the file
@@ -191,7 +191,7 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
     """
     Uses the gen3git utility to get the release notes between the old and new
     versions for each service, and returns the deployment changes only.
-    
+
     Args:
         versions_dict (dict):
             {

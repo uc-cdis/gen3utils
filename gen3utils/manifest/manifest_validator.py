@@ -43,7 +43,7 @@ def validate_manifest(manifest, validation_requirement):
 
 def validate_manifest_block(manifest, blocks_requirements):
     """
-    Validates blocks in cdis-manifest. 
+    Validates blocks in cdis-manifest.
 
     Args:
         manifest (dict): Contents of manifest.json file.
@@ -117,10 +117,10 @@ def validate_manifest_block(manifest, blocks_requirements):
     return ok
 
 
-def get_manifest_version(manifest_versions, service):
+def get_manifest_version(manifest_versions, service, release_tag_are_branches=True):
     """
     Get the service version from cdis-manifest
-        Arg: 
+        Arg:
             service: microservice name
             manifest_versions: the versions block from manifest.json
         Return:
@@ -132,7 +132,7 @@ def get_manifest_version(manifest_versions, service):
             # calling get_manifest_version()! it should never happen
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
-            if version_is_branch(service_version):
+            if version_is_branch(service_version, release_tag_are_branches):
                 logger.warning(
                     "{} is on a branch ({}): not validating".format(
                         service, service_version
@@ -143,6 +143,18 @@ def get_manifest_version(manifest_versions, service):
                 return version.parse(service_version)
             except:
                 return service_version
+
+
+def is_release_tag(parsed_version):
+    """
+    Args:
+        parsed_version: releases.version
+    Returns:
+        bool: True if version's major number is >= 2019. This is true of
+        our current monthly release versions (e.g. 2020.05, 2019.11) but not
+        true of our standard semver versions (e.g. 2.33.0)
+    """
+    return parsed_version >= version.parse("2019.0")
 
 
 def version_is_branch(version, release_tag_are_branches=True):
@@ -174,7 +186,7 @@ def version_is_branch(version, release_tag_are_branches=True):
 
 def versions_validation(manifest_versions, versions_requirements):
     """
-    Validates versions in cdis-manifest 
+    Validates versions in cdis-manifest
 
     Arg:
         manifest_versions: manifest.json "versions" section
@@ -249,16 +261,16 @@ def version_requirement_validation(
     service_requirement, requirement_key_list, versions_manifest, current_validation
 ):
     """
-    Validates version matches the requirement for a specific service 
+    Validates version matches the requirement for a specific service
 
     Args:
-    service_requirement: service name and its version requirement 
-    requirement_key_list: list of service name which need validation 
+    service_requirement: service name and its version requirement
+    requirement_key_list: list of service name which need validation
     versions_manfiest: versions block from manifest
     current_validation (str): service name and version that are currently being validated
 
     Return:
-        ok(bool): whether the validation succeeded. 
+        ok(bool): whether the validation succeeded.
     """
     ok = True
 
