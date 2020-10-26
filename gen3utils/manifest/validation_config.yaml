@@ -48,7 +48,7 @@ versions:
   needs:
     arborist: "2.3.0"
   desc: "synapse integration. fence higher than 4.6.0 requires arborist higher than 2.3.0"
-- fence: 
+- fence:
     min: "4.4.0"
     max: "4.5.0"
   needs:
