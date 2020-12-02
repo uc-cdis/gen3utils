@@ -3,7 +3,7 @@ from packaging import version
 import yaml
 import re
 
-from gen3utils.manifest.manifest_validator import get_manifest_version, is_release_tag
+from gen3utils.manifest.manifest_validator import get_manifest_version
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import MappingError, PropertiesError, PathError, FieldError
 
@@ -317,6 +317,18 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
     return recorded_errors
 
 
+def is_release_tag(parsed_version):
+    """
+    Args:
+        parsed_version: releases.version
+    Returns:
+        bool: True if version's major number is >= 2019. This is true of
+        our current monthly release versions (e.g. 2020.05, 2019.11) but not
+        true of our standard semver versions (e.g. 2.33.0)
+    """
+    return parsed_version >= version.parse("2019.0")
+
+
 def validate_mapping(dictionary_url, mapping_file, manifest):
     dictionary, model = init_dictionary(dictionary_url)
     with open(mapping_file) as f:
@@ -328,7 +340,7 @@ def validate_mapping(dictionary_url, mapping_file, manifest):
         manifest["versions"], "tube", release_tag_are_branches=False
     )
     underscore = False
-    if tube_version is not None:
+    if tube_version is not None and type(tube_version) != str:  # str if branch
         if not is_release_tag(tube_version) and tube_version >= version.parse("0.4.0"):
             underscore = True
         elif tube_version >= version.parse("2020.10"):
