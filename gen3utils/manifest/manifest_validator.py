@@ -125,6 +125,7 @@ def get_manifest_version(manifest_versions, service, release_tag_are_branches=Tr
             manifest_versions: the versions block from manifest.json
         Return:
             parsed microservice version (or None if service not in manifest)
+            (or version string if unable to parse or version is a branch)
     """
     for manifest_version in manifest_versions:
         if manifest_version == service:
@@ -134,7 +135,7 @@ def get_manifest_version(manifest_versions, service, release_tag_are_branches=Tr
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version, release_tag_are_branches):
                 logger.warning(
-                    "{} is on a branch ({}): not validating".format(
+                    "{} is on a branch ({}): not validating, returning string type".format(
                         service, service_version
                     )
                 )
@@ -142,19 +143,12 @@ def get_manifest_version(manifest_versions, service, release_tag_are_branches=Tr
             try:
                 return version.parse(service_version)
             except:
+                logger.warning(
+                    "Cannot parse version '{}', returning string type".format(
+                        service_version
+                    )
+                )
                 return service_version
-
-
-def is_release_tag(parsed_version):
-    """
-    Args:
-        parsed_version: releases.version
-    Returns:
-        bool: True if version's major number is >= 2019. This is true of
-        our current monthly release versions (e.g. 2020.05, 2019.11) but not
-        true of our standard semver versions (e.g. 2.33.0)
-    """
-    return parsed_version >= version.parse("2019.0")
 
 
 def version_is_branch(version, release_tag_are_branches=True):
