@@ -211,11 +211,9 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
     for service, versions in versions_dict.items():
         # only get the deployment changes if the new version is more
         # recent than the old version. ignore services on a branch
-        if (
-            not version_is_branch(versions["old"], release_tag_are_branches=False)
-            and not version_is_branch(versions["new"], release_tag_are_branches=False)
-            and version.parse(versions["old"]) < version.parse(versions["new"])
-        ):
+        if not version_is_branch(
+            versions["old"], release_tag_are_branches=False
+        ) and not version_is_branch(versions["new"], release_tag_are_branches=False):
             # by default, assume the code lives in repo uc-cdis/<service name>
             repo_name = SERVICE_TO_REPO.get(service, service)
 
