@@ -41,3 +41,13 @@ def etl_mapping_validation_mapping_failed():
 @pytest.fixture(scope="session")
 def etl_mapping_validation_format_failed():
     return "tests/data/etlMapping_format_error.yaml"
+
+
+@pytest.fixture(scope="session")
+def etl_mapping_validation_mapping_collector():
+    return "tests/data/etlMapping_collector.yaml"
+
+
+@pytest.fixture(scope="session")
+def etl_mapping_validation_mapping_collector_unknown_prop():
+    return "tests/data/etlMapping_collector_unknown_prop.yaml"

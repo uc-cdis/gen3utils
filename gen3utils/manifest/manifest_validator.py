@@ -117,7 +117,9 @@ def validate_manifest_block(manifest, blocks_requirements):
     return ok
 
 
-def get_manifest_version(manifest_versions, service, release_tag_are_branches=True):
+def get_manifest_version(
+    manifest_versions, service, release_tag_are_branches=True, warn=True
+):
     """
     Get the service version from cdis-manifest
         Arg:
@@ -134,20 +136,22 @@ def get_manifest_version(manifest_versions, service, release_tag_are_branches=Tr
             service_line = manifest_versions[service]
             service_version = service_line.split(":")[1]
             if version_is_branch(service_version, release_tag_are_branches):
-                logger.warning(
-                    "{} is on a branch ({}): not validating, returning string type".format(
-                        service, service_version
+                if warn:
+                    logger.warning(
+                        "{} is on a branch ({}): not validating, returning string type".format(
+                            service, service_version
+                        )
                     )
-                )
                 return service_version
             try:
                 return version.parse(service_version)
             except:
-                logger.warning(
-                    "Cannot parse version '{}', returning string type".format(
-                        service_version
+                if warn:
+                    logger.warning(
+                        "Cannot parse version '{}', returning string type".format(
+                            service_version
+                        )
                     )
-                )
                 return service_version
 
 
