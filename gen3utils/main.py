@@ -12,7 +12,7 @@ from gen3utils.deployment_changes.generate_comment import (
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
 
-logger = get_logger("cdismanifest", log_level="info")
+logger = get_logger("gen3utils", log_level="info")
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -52,6 +52,7 @@ def validate_manifest(manifest_files):
 def validate_etl_mapping(etl_mapping_file, manifest_file):
     """Validate an ETL_MAPPING_FILE against the dictionary specified in the MANIFEST_FILE."""
 
+    logger.info("Validating ETL mapping {}".format(etl_mapping_file))
     with open(manifest_file, "r") as f1:
         manifest = json.loads(f1.read())
         dictionary_url = manifest.get("global", {}).get("dictionary_url")
@@ -59,18 +60,18 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
             logger.error("No dictionary URL in manifest {}".format(manifest_file))
             return
 
-        print("  Using dictionary: {}".format(dictionary_url))
+        logger.info("  Using dictionary: {}".format(dictionary_url))
         recorded_errors = validate_mapping(dictionary_url, etl_mapping_file, manifest)
 
         if recorded_errors:
-            print("  ETL mapping validation failed:")
+            logger.error("  ETL mapping validation failed:")
             for err in recorded_errors:
-                print("  - {}".format(err))
+                logger.error("  - {}".format(err))
             raise AssertionError(
                 "ETL mapping validation failed. See errors in previous logs."
             )
         else:
-            print("  OK!")
+            logger.info("  OK!")
 
 
 @main.command()
