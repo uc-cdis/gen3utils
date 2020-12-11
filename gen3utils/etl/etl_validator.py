@@ -42,14 +42,18 @@ def validate_list_props(
     recorded_errors,
     grouping_path,
     index,
+    nodes_for_category=None,
 ):
+    if not nodes_for_category:
+        nodes_for_category = []
+
     if type(props_list) is list:
         for prop in props_list:
             if "path" in prop and "props" in prop:  # flatten_props
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
                         real_prop,
-                        labels_to_back_refs.values(),
+                        labels_to_back_refs,
                         nodes_with_props,
                         recorded_errors,
                         prop.get("path", grouping_path),
@@ -61,10 +65,11 @@ def validate_list_props(
             else:
                 new_props = validate_prop(
                     prop,
-                    labels_to_back_refs.values(),
+                    labels_to_back_refs,
                     nodes_with_props,
                     recorded_errors,
                     grouping_path,
+                    nodes_for_category,
                 )
                 index.props.update({p.name: p for p in new_props})
             # joining_props which contain join_on and index will be validated after all indices are walked through
@@ -74,7 +79,7 @@ def validate_list_props(
                 for prop in v.get("props"):
                     new_props = validate_prop(
                         prop,
-                        labels_to_back_refs.values(),
+                        labels_to_back_refs,
                         nodes_with_props,
                         recorded_errors,
                         labels_to_back_refs.get(k),
@@ -90,10 +95,23 @@ def validate_joining_prop(json_obj, recorded_errors, joining_index):
 
 
 def validate_prop(
-    json_obj, list_of_nodes, nodes_with_props, recorded_errors, grouping_path=None
+    json_obj,
+    labels_to_back_refs,
+    nodes_with_props,
+    recorded_errors,
+    grouping_path=None,
+    nodes_for_category=None,
 ):
+    if not nodes_for_category:
+        nodes_for_category = []
+
     names = validate_path(
-        json_obj, grouping_path, recorded_errors, list_of_nodes, nodes_with_props
+        json_obj,
+        grouping_path,
+        recorded_errors,
+        labels_to_back_refs,
+        nodes_with_props,
+        nodes_for_category,
     )
     if len(names) == 0:
         names.append(
@@ -102,6 +120,8 @@ def validate_prop(
                 json_obj.get("path", grouping_path),
                 recorded_errors,
                 nodes_with_props,
+                labels_to_back_refs,
+                nodes_for_category,
             )
         )
 
@@ -154,28 +174,44 @@ def validate_name(json_obj, recorded_errors):
     return name
 
 
-def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
+def validate_name_src(
+    json_obj,
+    path,
+    recorded_errors,
+    nodes_with_props,
+    labels_to_back_refs=None,
+    nodes_for_category=None,
+):
+    if not labels_to_back_refs:
+        labels_to_back_refs = {}
+    if not nodes_for_category:
+        nodes_for_category = []
+
     name = validate_name(json_obj, recorded_errors)
     fn = validate_fn(json_obj, recorded_errors)
     src = json_obj.get("src", name)
     if not src:
         return name
-    if not path:
+    if not path and not nodes_for_category:
         recorded_errors.append(
             FieldError(
                 'src field must be specified with a path for "{}"'.format(json_obj)
             )
         )
     else:
-        path_items = path.split(".")
-        builtin_fields = ["source_node"]
-        valid_fields = nodes_with_props.get(path_items[-1], [])
-        valid_fields.extend(builtin_fields)
+        valid_fields = set(["source_node"])  # built-in fields
+        if path:
+            path_items = path.split(".")
+            valid_fields.update(nodes_with_props.get(path_items[-1], []))
+        for node_name in nodes_for_category:
+            node_backref = labels_to_back_refs[node_name]
+            node_props = nodes_with_props.get(node_backref, [])
+            valid_fields.update(node_props)
         if fn != "count" and src not in valid_fields:
             recorded_errors.append(
                 FieldError(
-                    'src field "{}" (declared in "{}" "{}") is not found in given dictionary.'.format(
-                        src, path, json_obj
+                    'src field "{}" (declared in {} "{}") is not found in given dictionary.'.format(
+                        src, f'"{path}"' if path else "a collector index", json_obj
                     )
                 )
             )
@@ -183,43 +219,55 @@ def validate_name_src(json_obj, path, recorded_errors, nodes_with_props):
 
 
 def validate_path(
-    json_obj, grouping_path, recorded_errors, list_of_nodes, nodes_with_props
+    json_obj,
+    grouping_path,
+    recorded_errors,
+    labels_to_back_refs,
+    nodes_with_props,
+    nodes_for_category=None,
 ):
+    if not nodes_for_category:
+        nodes_for_category = []
+    nodes_for_category_backrefs = [labels_to_back_refs[n] for n in nodes_for_category]
+
     path = json_obj.get("path", grouping_path)
     names = []
-    if path is None:
+    if path:
+        nodes_for_category_backrefs.append(path)
+    if not nodes_for_category_backrefs:
         recorded_errors.append(
             PropertiesError(
                 'Missing path declaration for the property "{}".'.format(json_obj)
             )
         )
     else:
-        path_items = path.split(".")
-        if "_ANY" in path_items:
-            path_items.remove("_ANY")
-        for item in path_items:
-            # get the edge name and the property definition out of the line:
-            # subjects[subject_id:id,project_id]
-            [edge, str_fields] = (
-                list(filter(None, re.split(r"[\[\]]", item)))
-                if "[" in item
-                else [item, None]
-            )
-            if edge not in list_of_nodes:
-                recorded_errors.append(PathError(path))
-            if str_fields is not None:
-                fields = str_fields.split(",")
-                for f in fields:
-                    src = f.split(":")[-1] if f.find(":") != -1 else f
-                    name = f.split(":")[0] if f.find(":") != -1 else f
-                    names.append(
-                        validate_name_src(
-                            {"name": name, "src": src},
-                            edge,
-                            recorded_errors,
-                            nodes_with_props,
+        for path in nodes_for_category_backrefs:
+            path_items = path.split(".")
+            if "_ANY" in path_items:
+                path_items.remove("_ANY")
+            for item in path_items:
+                # get the edge name and the property definition out of the line:
+                # subjects[subject_id:id,project_id]
+                [edge, str_fields] = (
+                    list(filter(None, re.split(r"[\[\]]", item)))
+                    if "[" in item
+                    else [item, None]
+                )
+                if edge not in labels_to_back_refs.values():
+                    recorded_errors.append(PathError(path))
+                if str_fields is not None:
+                    fields = str_fields.split(",")
+                    for f in fields:
+                        src = f.split(":")[-1] if f.find(":") != -1 else f
+                        name = f.split(":")[0] if f.find(":") != -1 else f
+                        names.append(
+                            validate_name_src(
+                                {"name": name, "src": src},
+                                edge,
+                                recorded_errors,
+                                nodes_with_props,
+                            )
                         )
-                    )
     return names
 
 
@@ -292,17 +340,13 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
         index = Index(m.get("doc_type"), underscore)
         indices[index.name] = index
         category = m.get("category")
-        if category is not None:
-            first_categorized_node = categories_to_labels.get(category)[0]
-        else:
-            first_categorized_node = m.get("root")
+        node_name = m.get("root")
         for key, value in m.items():
             if key.endswith("props"):
                 root_path = (
-                    labels_to_back_refs.get(first_categorized_node)
-                    if key == "props"
-                    else None
+                    labels_to_back_refs.get(node_name) if key == "props" else None
                 )
+                nodes_for_category = categories_to_labels.get(category, [])
                 validate_list_props(
                     value,
                     labels_to_back_refs,
@@ -310,6 +354,7 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
                     recorded_errors,
                     root_path,
                     index,
+                    nodes_for_category,
                 )
     for m in mappings.get("mappings"):
         joining_props = m.get("joining_props", [])
@@ -337,7 +382,7 @@ def validate_mapping(dictionary_url, mapping_file, manifest):
     # If using tube >= 0.4.0 or >= 2020.10, {doc_type}_id fields have a prefixed underscore.
     # https://github.com/uc-cdis/tube/releases/tag/0.4.0
     tube_version = get_manifest_version(
-        manifest["versions"], "tube", release_tag_are_branches=False
+        manifest["versions"], "tube", release_tag_are_branches=False, warn=False
     )
     underscore = False
     if tube_version is not None and type(tube_version) != str:  # str if branch

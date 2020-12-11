@@ -1,0 +1,9 @@
+mappings:
+  - name: tb_file
+    doc_type: file
+    type: collector
+    root: None
+    category: data_file
+    props:
+      - name: object_id
+      - name: prop_doesnt_exist
