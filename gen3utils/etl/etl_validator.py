@@ -131,8 +131,12 @@ def validate_prop(
 
 def validate_joining_src(json_obj, recorded_errors, joining_props):
     src = json_obj.get("src", json_obj.get("name"))
+    alternate_src = json_obj.get("alternate_src", json_obj.get("name"))
     if src is not None:
         if src not in joining_props:
+            if alternate_src in joining_props:
+                print("WARN: Utilizing alternate src")
+                return
             recorded_errors.append(
                 FieldError(
                     'src field "{}" (declared in "{}") is not found in joining index.'.format(
