@@ -1,9 +1,11 @@
-from cdislogging import get_logger
-import json
 import click
+import json
+import multiprocessing
 import os
-import yaml
 import sys
+import yaml
+
+from cdislogging import get_logger
 
 from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
@@ -87,6 +89,48 @@ def post_deployment_changes(repository, pull_request_number):
         sys.exit(1)
 
     comment_deployment_changes_on_pr(repository, pull_request_number)
+
+
+@main.command()
+@click.argument("bucket")
+@click.argument("prefix")
+@click.argument("script")
+@click.option("--region", default="us-east-1", show_default=True)
+@click.option(
+    "--access-key-id", default=os.environ.get("ACCESS_KEY_ID"), show_default=True
+)
+@click.option(
+    "--secret-access-key",
+    default=os.environ.get("SECRET_ACCESS_KEY"),
+    show_default=True,
+)
+@click.option(
+    "-c",
+    "--concurrency",
+    type=int,
+    default=multiprocessing.cpu_count() + 1,
+    show_default=True,
+)
+@click.option("--progress/--no-progress", default=True, show_default=True)
+def s3log(*args, **kwargs):
+    """Run SCRIPT in Gen3 logs under S3 BUCKET:PREFIX.
+
+    The SCRIPT should be importable defining a method like this:
+
+    \b
+        def handle_row(obj, line):
+            if 1 + 1 == 2:
+                return line
+
+    The returning results will be joined with newline into the stdout.
+    """
+    try:
+        from s3log.s3log import S3Log
+    except ImportError as e:
+        print(e, '\nInstall with `poetry install --extras "s3log"` to run this command')
+        exit(1)
+
+    S3Log(*args, **kwargs).run()
 
 
 if __name__ == "__main__":
