@@ -24,6 +24,9 @@ psqlgraph = "~3.0.0"
 pyyaml = "~5.1"
 six = "~1.12.0"
 
+# optional dependencies
+aiobotocore = "^1.2.0"
+
 [tool.poetry.dev-dependencies]
 pytest = ">=3.6"
 
@@ -33,3 +36,6 @@ gen3utils = "gen3utils.main:main"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.extras]
+s3log = ["aiobotocore"]
