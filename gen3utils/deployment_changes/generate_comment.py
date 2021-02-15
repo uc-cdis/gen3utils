@@ -14,7 +14,14 @@ logger = get_logger("comment-deployment-changes", log_level="info")
 
 
 # whitelist of services to ignore when checking tags and services on branch
-IGNORED_SERVICES = ["ambassador", "aws-es-proxy", "fluentd", "jupyterhub", "nb2"]
+IGNORED_SERVICES = [
+    "ambassador",
+    "aws-es-proxy",
+    "fluentd",
+    "jupyterhub",
+    "nb2",
+    "access-backend",
+]
 
 # update this config if the service name in the manifest "versions"
 # block is not the same as the repo name. services that are not
