@@ -14,6 +14,8 @@ logger = get_logger("comment-deployment-changes", log_level="info")
 
 
 # whitelist of services to ignore when checking tags and services on branch
+# TODO: We're adding access-backend here just to unblock the gen3utils check in gitops-qa's .travis.yml
+# This repo is private and there seems to be an issue with gen3utils where it is not picking up the GITHUB_TOKEN
 IGNORED_SERVICES = [
     "ambassador",
     "aws-es-proxy",
