@@ -25,7 +25,9 @@ pyyaml = "~5.1"
 six = "~1.12.0"
 
 # optional dependencies
-aiobotocore = "^1.2.0"
+# `get_session` does not accept the `loop` parameter in aiobotocore>0.11.1
+# so we'd need to fix the `s3log` code
+aiobotocore = "0.11.1"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=3.6"

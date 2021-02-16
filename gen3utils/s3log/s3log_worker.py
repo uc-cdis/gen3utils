@@ -39,19 +39,22 @@ async def stream_json(
                     pos = e.pos + 1
                     ex = None
                 else:
+                    print(
+                        f"Cannot get JSON from chunk: {e}. Chunk:\n{buf}",
+                        file=sys.stderr,
+                    )
                     ex = e
                     break
             else:
                 ex = None
                 yield obj, buf[start:pos]
         buf = buf[pos:]
-    # if ex is not None:
-    #     raise ex
+        if ex is not None:
+            raise ex
     raise EOFError()
 
 
-async def worker(loop):
-    handle_row = getattr(importlib.import_module(sys.argv[1]), "handle_row")
+async def worker(loop, handle_row):
     stdin = asyncio.StreamReader()
     await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(stdin), sys.stdin)
     try:
@@ -71,8 +74,10 @@ async def worker(loop):
 
 
 def worker_main():
+    script_module = sys.argv[1]
+    handle_row = getattr(importlib.import_module(script_module), "handle_row")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(worker(loop))
+    loop.run_until_complete(worker(loop, handle_row))
 
 
 if __name__ == "__main__":

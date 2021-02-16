@@ -48,6 +48,13 @@ class S3Log:
         self._q = asyncio.Queue()
         self._tasks_queue = asyncio.Queue()
 
+        print(
+            f"Processing logs from {self._bucket}/{self._prefix} in {self._aws_region}",
+            file=sys.stderr,
+        )
+        print(f"Concurrency: {self._concurrency}", file=sys.stderr)
+        print(f"Show progress: {self._show_progress}", file=sys.stderr)
+
     async def _wait(self):
         while True:
             task = await self._tasks_queue.get()
@@ -128,6 +135,7 @@ class S3Log:
             ):
                 for c in result.get("Contents", []):
                     key = c["Key"]
+                    print(f"Processing key: {key}", file=sys.stderr)
                     proc = await self._q.get()
                     await self._tasks_queue.put(
                         self._loop.create_task(self.feed(client, key, proc))
