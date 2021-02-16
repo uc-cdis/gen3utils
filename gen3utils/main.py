@@ -125,7 +125,7 @@ def s3log(*args, **kwargs):
     The returning results will be joined with newline into the stdout.
     """
     try:
-        from s3log.s3log import S3Log
+        from gen3utils.s3log.s3log import S3Log
     except ImportError as e:
         print(e, '\nInstall with `poetry install --extras "s3log"` to run this command')
         exit(1)

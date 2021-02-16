@@ -28,6 +28,27 @@ pip install gen3utils
 gen3utils post-deployment-changes <username>/<repository> <pull request number>
 ```
 
+## Log parser for CTDS log pipeline
+
+```
+pip install gen3utils
+gen3utils s3log --help
+gen3utils s3log [OPTIONS] BUCKET PREFIX SCRIPT
+```
+
+Run `SCRIPT` in Gen3 logs under S3 `BUCKET:PREFIX`. The `SCRIPT` should be importable defining a method like this:
+```
+def handle_row(obj, line):
+    if 1 + 1 == 2:
+        return line
+```
+
+For example, to process logs in bucket `my-commons-logs` at prefix `my-logs` with a `gen3utils/script.py` file:
+```
+pip install gen3utils
+gen3utils s3log my-commons-logs my-logs gen3utils.script
+```
+
 ## Running tests locally
 
 ```
