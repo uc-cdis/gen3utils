@@ -265,7 +265,7 @@ PyYAML = ">=5.1,<6.0"
 
 [[package]]
 name = "gen3git"
-version = "0.3.8"
+version = "0.3.9"
 description = "Helps with release."
 category = "main"
 optional = false
@@ -771,7 +771,7 @@ s3log = ["aiobotocore"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "00a17c7566a294f16d8af3deb21aa48468af873188f0fab60a223326ab1672ef"
+content-hash = "b1a96ac98483bcdd595b6de72dd55e2319f8c165c43be0f4526c78df99aa685d"
 
 [metadata.files]
 aiobotocore = [
@@ -933,7 +933,7 @@ gen3dictionary = [
     {file = "gen3dictionary-2.0.1.tar.gz", hash = "sha256:59731df74e4b0ef719e12425f0a4e064a8182305448825f9237467f60c337446"},
 ]
 gen3git = [
-    {file = "gen3git-0.3.8.tar.gz", hash = "sha256:4977df1667612414a6b209f200ba1892571ce64a804e18a4f519fb4149d6866d"},
+    {file = "gen3git-0.3.9.tar.gz", hash = "sha256:72c2bc39c62f9154544b1132ca39018b8cacceae481252197f0f682dea1a843c"},
 ]
 gitdb = [
     {file = "gitdb-4.0.5-py3-none-any.whl", hash = "sha256:91f36bfb1ab7949b3b40e23736db18231bf7593edada2ba5c3a174a7b23657ac"},
