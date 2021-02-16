@@ -265,7 +265,7 @@ PyYAML = ">=5.1,<6.0"
 
 [[package]]
 name = "gen3git"
-version = "0.3.7"
+version = "0.3.8"
 description = "Helps with release."
 category = "main"
 optional = false
@@ -933,7 +933,7 @@ gen3dictionary = [
     {file = "gen3dictionary-2.0.1.tar.gz", hash = "sha256:59731df74e4b0ef719e12425f0a4e064a8182305448825f9237467f60c337446"},
 ]
 gen3git = [
-    {file = "gen3git-0.3.7.tar.gz", hash = "sha256:3725e2b8859b9ccddf4ca0b6661bcbfec1428448beb9475246c93ad70223f3d6"},
+    {file = "gen3git-0.3.8.tar.gz", hash = "sha256:4977df1667612414a6b209f200ba1892571ce64a804e18a4f519fb4149d6866d"},
 ]
 gitdb = [
     {file = "gitdb-4.0.5-py3-none-any.whl", hash = "sha256:91f36bfb1ab7949b3b40e23736db18231bf7593edada2ba5c3a174a7b23657ac"},
