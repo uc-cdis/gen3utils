@@ -13,6 +13,8 @@ from gen3utils.deployment_changes.generate_comment import (
 
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
+from gen3utils.gitops.gitops_validator import val_gitops
+
 
 logger = get_logger("gen3utils", log_level="info")
 
@@ -23,6 +25,36 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
+
+
+@main.command()
+@click.argument("etl_mapping_file", type=str, nargs=1, required=True)
+@click.argument("manifest_file", type=str, nargs=1, required=True)
+@click.argument("gitops_file", type=str, nargs=1, required=True)
+def validate_gitops(etl_mapping_file, manifest_file, gitops_file):
+    """Validate a GITOPS_FILE against the dictionary specified in the MANIFEST_FILE
+    and an ETL_MAPPING_FILE"""
+
+    logger.info("Validating gitops file {}".format(gitops_file))
+    dictionary_url = None
+    with open(manifest_file, "r") as f1:
+        manifest = json.loads(f1.read())
+        dictionary_url = manifest.get("global", {}).get("dictionary_url")
+        if dictionary_url is None:
+            logger.error("No dictionary URL in manifest {}".format(manifest_file))
+            return
+
+    recorded_errors = val_gitops(dictionary_url, etl_mapping_file, gitops_file)
+
+    if recorded_errors:
+        logger.error("  ETL mapping validation failed:")
+        for err in recorded_errors:
+            logger.error("  - {}".format(err))
+        raise AssertionError(
+            "ETL mapping validation failed. See errors in previous logs."
+        )
+    else:
+        logger.info("  OK!")
 
 
 @main.command()

@@ -30,3 +30,8 @@ class PathError(MappingError):
 class FieldError(MappingError):
     def __init__(self, message):
         super(FieldError, self).__init__(message, "Field")
+
+class FieldSyntaxError(MappingError):
+    def __init__(self, field):
+        message = "Required field {} not found".format(field)
+        super(FieldSyntaxError, self).__init__(message, "FieldSyntaxError")
