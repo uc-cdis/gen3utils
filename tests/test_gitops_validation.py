@@ -1,5 +1,4 @@
 import pytest
-import copy
 from gen3utils.errors import FieldError, FieldSyntaxError
 from gen3utils.gitops.gitops_validator import (
     check_field_value,
