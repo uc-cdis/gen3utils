@@ -10,9 +10,11 @@ from gen3utils.gitops.gitops_validator import (
     validate_against_etl,
     validate_explorerConfig,
     validate_studyViewerConfig,
+    validate_gitops_syntax,
 )
 
 data_dict = "https://s3.amazonaws.com/dictionary-artifacts/covid19-datadictionary/3.8.1/schema.json"
+etlmapping = "tests/data/etlMapping_gitops.yaml"
 
 
 def test_check_required_fields():
@@ -123,10 +125,9 @@ def test_validate_studyViewerConfig(gitops_json, etl_prop_type_map):
     ]
 
 
-def test_val_gitops(gitops_etl_mapping):
-
+def test_val_gitops():
     # etl mapping errors
-    errors = val_gitops(data_dict, gitops_etl_mapping, "tests/data/gitops_test.json")
+    errors = val_gitops(data_dict, etlmapping, "tests/data/gitops_test.json")
     assert errors == [
         FieldError(
             "Invalid field investigator_affiliation in explorerConfig.filters.tabs.fields"
@@ -138,13 +139,13 @@ def test_val_gitops(gitops_etl_mapping):
 
     # syntax error
     with pytest.raises(AssertionError):
-        val_gitops(data_dict, gitops_etl_mapping, "tests/data/gitops_syntax_error.json")
+        val_gitops(data_dict, etlmapping, "tests/data/gitops_syntax_error.json")
 
     # dictionary error
     with pytest.raises(AssertionError):
-        val_gitops(data_dict, gitops_etl_mapping, "tests/data/gitops_dict_error.json")
+        val_gitops(data_dict, etlmapping, "tests/data/gitops_dict_error.json")
 
 
 def test_validate_syntax(gitops_json_syntax_error):
-    with pytest.raises(AssertionError):
-        validate_gitops_syntax(gitops_json_syntax_error)
+    error = validate_gitops_syntax(gitops_json_syntax_error)
+    assert error == FieldSyntaxError("graphql")
