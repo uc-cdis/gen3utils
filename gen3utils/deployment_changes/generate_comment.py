@@ -41,6 +41,22 @@ SERVICE_TO_REPO = {
 }
 
 
+def comment_gitops_errors_on_pr(repository, pull_request_number, gitops_errors):
+    token = os.environ["GITHUB_TOKEN"]
+    headers = {"Authorization": "token {}".format(token)}
+
+    repository = repository.strip("/")
+    base_url = "https://api.github.com/repos/{}".format(repository)
+    logger.info("Checking pull request: {} #{}".format(repository, pull_request_number))
+    pr_comments_url = "{}/issues/{}/comments".format(base_url, pull_request_number)
+    contents = ""
+    for error in gitops_errors:
+        contents += "## Gitops-etlMapping : {}".format(error)
+    full_comment = "# {}\n{}".format("gitops.json", contents)
+
+    submit_comment(full_comment, headers, pr_comments_url)
+
+
 def comment_deployment_changes_on_pr(repository, pull_request_number):
     """
     Gets the deployments changes for the specified pull request and write them in a comment, along with a warning if any service is on a branch.

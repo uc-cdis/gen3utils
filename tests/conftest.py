@@ -51,3 +51,54 @@ def etl_mapping_validation_mapping_collector():
 @pytest.fixture(scope="session")
 def etl_mapping_validation_mapping_collector_unknown_prop():
     return "tests/data/etlMapping_collector_unknown_prop.yaml"
+
+
+@pytest.fixture(scope="function")
+def gitops_json():
+    with open("tests/data/gitops_test.json", "r") as f:
+        data = json.loads(f.read())
+    return data
+
+
+@pytest.fixture(scope="function")
+def gitops_json_syntax_error():
+    with open("tests/data/gitops_syntax_error.json", "r") as f:
+        data = json.loads(f.read())
+    return data
+
+
+@pytest.fixture(scope="function")
+def gitops_json_dict_error():
+    with open("tests/data/gitops_dict_error.json", "r") as f:
+        data = json.loads(f.read())
+    return data
+
+
+@pytest.fixture(scope="function")
+def etl_prop_type_map():
+    type_map = {
+        "subject": set(
+            [
+                "project_id",
+                "project_url",
+                "project_name",
+                "vital_status",
+                "gender",
+                "age",
+                "image_location",
+                "code",
+                "study_doi",
+                "location",
+                "continent",
+            ]
+        ),
+        "dataset": set(["code", "name", "program_name"]),
+    }
+    return type_map
+
+
+@pytest.fixture(scope="function")
+def gitops_etl_mapping():
+    with open("tests/data/etlMapping_gitops.yaml", "r") as f:
+        data = yaml.safe_load(f.read())
+    return data

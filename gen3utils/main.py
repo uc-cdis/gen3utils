@@ -31,7 +31,11 @@ def main():
 @click.argument("etl_mapping_file", type=str, nargs=1, required=True)
 @click.argument("manifest_file", type=str, nargs=1, required=True)
 @click.argument("gitops_file", type=str, nargs=1, required=True)
-def validate_gitops(etl_mapping_file, manifest_file, gitops_file):
+@click.argument("repository", type=str, nargs=1, required=False)
+@click.argument("pull_request_number", type=int, nargs=1, required=False)
+def validate_gitops(
+    etl_mapping_file, manifest_file, gitops_file, repository, pull_request_number
+):
     """Validate a GITOPS_FILE against the dictionary specified in the MANIFEST_FILE
     and an ETL_MAPPING_FILE"""
 
@@ -46,15 +50,16 @@ def validate_gitops(etl_mapping_file, manifest_file, gitops_file):
 
     recorded_errors = val_gitops(dictionary_url, etl_mapping_file, gitops_file)
 
-    if recorded_errors:
-        logger.error("  ETL mapping validation failed:")
-        for err in recorded_errors:
-            logger.error("  - {}".format(err))
-        raise AssertionError(
-            "ETL mapping validation failed. See errors in previous logs."
-        )
+    if recorded_errors and repository and pull_request_number:
+        if not "GITHUB_TOKEN" in os.environ:
+            logger.error("Exiting: Missing GITHUB_TOKEN")
+            sys.exit(1)
+        logger.info("OK - with commented gitops-etlMapping errors")
+    elif recorded_errors:
+        for error in recorded_errors:
+            logger.info(error)
     else:
-        logger.info("  OK!")
+        logger.info("OK")
 
 
 @main.command()
