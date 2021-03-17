@@ -17,7 +17,7 @@ def val_gitops(data_dictionary, etl_mapping, gitops):
     error = validate_gitops_syntax(gitops_config)
     if error:
         raise AssertionError(
-            "Gitops failed to validate do to syntax error: {}".format(error)
+            "Gitops failed to validate due to syntax error: {}".format(error)
         )
 
     ok = True
