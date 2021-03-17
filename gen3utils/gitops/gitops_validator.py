@@ -14,13 +14,10 @@ logger = get_logger("validate-gitops", log_level="info")
 def val_gitops(data_dictionary, etl_mapping, gitops):
     with open(gitops, "r") as f:
         gitops_config = json.loads(f.read())
-    error = validate_gitops_syntax(gitops_config)
-    if error:
-        raise AssertionError(
-            "Gitops failed to validate due to syntax error: {}".format(error)
-        )
+    ok = validate_gitops_syntax(gitops_config)
+    if not ok:
+        raise AssertionError("gitops validation failed. See errors in previous logs.")
 
-    ok = True
     ok = validate_against_dictionary(gitops_config, data_dictionary)
     if not ok:
         raise AssertionError("gitops validation failed. See errors in previous logs.")
@@ -41,44 +38,44 @@ def validate_gitops_syntax(gitops):
     Currently only checks syntax needed for etl mapping and dictionary validation.
     """
     graphql = gitops.get("graphql")
-    if not graphql:
-        return FieldSyntaxError("graphql")
+    ok = assert_and_log(graphql, FieldSyntaxError("graphql"))
 
-    boardcounts = graphql.get("boardCounts")
-    if not boardcounts:
-        return FieldSyntaxError("graphql.boardCounts")
+    if graphql:
+        boardcounts = graphql.get("boardCounts")
+        ok = ok and assert_and_log(boardcounts, FieldSyntaxError("graphql.boardCounts"))
+        if boardcounts:
+            for item in boardcounts:
+                checks = ["graphql", "name", "plural"]
+                ok = check_required_fields("graphql.boardCounts", checks, item, ok)
 
-    for item in boardcounts:
-        checks = ["graphql", "name", "plural"]
-        error = check_required_fields("graphql.boardCounts", checks, item)
-        if error:
-            return error
-
-    chartcounts = graphql.get("chartCounts")
-    if not chartcounts:
-        return FieldSyntaxError("graphql.chartCounts")
+        chartcounts = graphql.get("chartCounts")
+        ok = ok and assert_and_log(chartcounts, FieldSyntaxError("graphql.chartCounts"))
 
     components = gitops.get("components")
+    ok = ok and assert_and_log(components, FieldSyntaxError("components"))
     if components:
         index = components.get("index")
-        if not index:
-            return FieldSyntaxError("components.index")
+        ok = ok and assert_and_log(index, FieldSyntaxError("components.index"))
+
         homepage = index.get("homepageChartNodes")
+        ok = ok and assert_and_log(
+            index, FieldSyntaxError("components.homepageChartNodes")
+        )
         if homepage:
             for item in homepage:
                 checks = ["node", "name"]
-                error = check_required_fields("components.index.homepage", checks, item)
-                if error:
-                    return error
+                ok = check_required_fields(
+                    "components.index.homepage", checks, item, ok
+                )
 
     explorerconfig = gitops.get("explorerConfig")
     configs = []
     if not explorerconfig:
         dataConfig = gitops.get("dataExplorerConfig")
         fileConfig = gitops.get("fileExplorerConfig")
-        if not dataConfig:
-            return FieldSyntaxError("(data)explorerConfig")
-        configs.append(dataConfig)
+        ok = ok and assert_and_log(dataConfig, FieldSyntaxError("(data)explorerConfig"))
+        if dataConfig:
+            configs.append(dataConfig)
         if fileConfig:
             configs.append(fileConfig)
     else:
@@ -86,27 +83,35 @@ def validate_gitops_syntax(gitops):
 
     for exp_config in configs:
         filters = exp_config.get("filters")
-        if not filters:
-            return FieldSyntaxError("explorerConfig.filters")
-
-        tabs = filters.get("tabs")
-        if not tabs:
-            return FieldSyntaxError("explorerConfig.filters")
-
-        for tab in tabs:
-            checks = ["title", "fields"]
-            error = check_required_fields("explorerConfig.filters.tab", checks, tab)
-            if error:
-                return error
+        ok = ok and assert_and_log(filters, FieldSyntaxError("explorerConfig.filters"))
+        if filters:
+            tabs = filters.get("tabs", [])
+            ok = ok and assert_and_log(
+                tabs, FieldSyntaxError("explorerConfig.filters.tabs")
+            )
+            for tab in tabs:
+                checks = ["title", "fields"]
+                ok = check_required_fields(
+                    "explorerConfig.filters.tab", checks, tab, ok
+                )
 
         guppy = exp_config.get("guppyConfig")
-        if not guppy:
-            return FieldSyntaxError("explorerConfig.guppyConfig")
-        if not guppy.get("dataType"):
-            return FieldSyntaxError("explorerConfig.guppyConfig.dataType")
+        ok = ok and assert_and_log(
+            guppy, FieldSyntaxError("explorerConfig.guppyConfig")
+        )
+        if guppy:
+            ok = ok and assert_and_log(
+                guppy.get("dataType"),
+                FieldSyntaxError("explorerConfig.guppyConfig.dataType"),
+            )
+            manifest_mapping = guppy.get("manifestMapping")
+            ok = ok and assert_and_log(
+                manifest_mapping,
+                FieldSyntaxError("explorerConfig.guppyConfig.manifestMapping"),
+            )
 
-        manifest_mapping = guppy.get("manifestMapping")
-        buttons = exp_config.get("buttons")
+        buttons = exp_config.get("buttons", [])
+        ok = ok and assert_and_log(buttons, FieldSyntaxError("explorerConfig.buttons"))
         val_mapping = False
         for button in buttons:
             if button.get("enabled") and button.get("type") == "manifest":
@@ -118,27 +123,30 @@ def validate_gitops_syntax(gitops):
                 "referenceIdFieldInResourceIndex",
                 "referenceIdFieldInDataIndex",
             ]
-            error = check_required_fields(
-                "explorerConfig.guppyConfig.manifestMapping", checks, manifest_mapping
+            ok = check_required_fields(
+                "explorerConfig.guppyConfig.manifestMapping",
+                checks,
+                manifest_mapping,
+                ok,
             )
-            if error:
-                return error
 
     study_viewer = gitops.get("studyViewerConfig")
+    ok = ok and assert_and_log(study_viewer, FieldSyntaxError("studyViewerConfig"))
+
     if study_viewer:
         checks = ["dataType", "listItemConfig", "rowAccessor"]
         for viewer in study_viewer:
-            error = check_required_fields("studyViewerConfig", checks, viewer)
-            if error:
-                return error
-    return None
+            ok = check_required_fields("studyViewerConfig", checks, viewer, ok)
+
+    return ok
 
 
-def check_required_fields(path, checks, field):
+def check_required_fields(path, checks, field, ok):
     for check in checks:
-        if not field.get(check):
-            return FieldSyntaxError(f"{path}.{check}")
-    return None
+        ok = ok and assert_and_log(
+            field.get("check"), FieldSyntaxError(f"{path}.{check}")
+        )
+    return ok
 
 
 def check_field_value(path, checks, accepted_values, errors):

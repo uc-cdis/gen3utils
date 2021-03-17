@@ -33,7 +33,7 @@ def main():
 @click.argument("gitops_file", type=str, nargs=1, required=True)
 @click.argument("repository", type=str, nargs=1, required=False)
 @click.argument("pull_request_number", type=int, nargs=1, required=False)
-def validate_gitops(
+def validate_portal_config(
     etl_mapping_file, manifest_file, gitops_file, repository, pull_request_number
 ):
     """Validate a GITOPS_FILE against the dictionary specified in the MANIFEST_FILE
@@ -54,12 +54,12 @@ def validate_gitops(
         if not "GITHUB_TOKEN" in os.environ:
             logger.error("Exiting: Missing GITHUB_TOKEN")
             sys.exit(1)
-        logger.info("OK - with commented gitops-etlMapping errors")
-    elif recorded_errors:
-        for error in recorded_errors:
-            logger.info(error)
+
+    if recorded_errors:
+        for err in recorded_errors:
+            logger.error("  - {}".format(err))
     else:
-        logger.info("OK")
+        logger.info("  OK!")
 
 
 @main.command()
