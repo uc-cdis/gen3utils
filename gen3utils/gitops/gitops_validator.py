@@ -343,7 +343,7 @@ def validate_against_dictionary(gitops, data_dictionary):
         data_dictionary (str): url of data dictionary
 
     Returns:
-        Error: Returns the error if it exists, else returns None.
+        ok(bool): whether the validation succeeded.
 
     """
 
