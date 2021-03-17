@@ -9,12 +9,10 @@ from cdislogging import get_logger
 
 from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
-    comment_gitops_errors_on_pr,
 )
-
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
-from gen3utils.gitops.gitops_validator import val_gitops
+from gen3utils.gitops.gitops_validator import val_gitops, comment_gitops_errors_on_pr
 
 
 logger = get_logger("gen3utils", log_level="info")
@@ -64,7 +62,7 @@ def validate_portal_config(
 
     if not ok:
         raise AssertionError(
-            "Portal config mapping validation failed. See errors in previous logs."
+            "Portal configuration mapping validation failed. See errors in previous logs."
         )
     else:
         logger.info("  OK!")
