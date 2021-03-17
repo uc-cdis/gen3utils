@@ -66,7 +66,15 @@
             "name"
           ]
         },
-        "buttons": [],
+        "buttons":[
+          {
+            "enabled": false,
+            "type": "file-manifest",
+            "rightIcon": "download",
+            "fileName": "file-manifest.json",
+            "dropdownId": "download"
+          }
+        ],
         "guppyConfig": {
           "dataType": "dataset",
           "nodeCountTitle": "Datasets",
@@ -93,6 +101,8 @@
     "studyViewerConfig": [
       {
         "dataType": "subject",
+        "fileDataType": "subject",
+        "docDataType": "subject",
         "rowAccessor": "code",
         "listItemConfig": {
           "blockFields": ["project_id"],

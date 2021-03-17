@@ -1,14 +1,17 @@
 import re
 import yaml
 import json
+import os
+
 from cdislogging import get_logger
 
 from gen3utils.assertion import assert_and_log
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import FieldSyntaxError, FieldError
+from gen3utils.deployment_changes.generate_comment import submit_comment
 
 
-logger = get_logger("validate-gitops", log_level="info")
+logger = get_logger("validate-portal-config", log_level="info")
 
 
 def val_gitops(data_dictionary, etl_mapping, gitops):
@@ -19,10 +22,8 @@ def val_gitops(data_dictionary, etl_mapping, gitops):
         raise AssertionError("gitops validation failed. See errors in previous logs.")
 
     ok = validate_against_dictionary(gitops_config, data_dictionary)
-    if not ok:
-        raise AssertionError("gitops validation failed. See errors in previous logs.")
     recorded_errors = validate_against_etl(gitops_config, etl_mapping)
-    return recorded_errors
+    return recorded_errors, ok
 
 
 def validate_gitops_syntax(gitops):
@@ -99,19 +100,16 @@ def validate_gitops_syntax(gitops):
         ok = ok and assert_and_log(
             guppy, FieldSyntaxError("explorerConfig.guppyConfig")
         )
+        buttons = exp_config.get("buttons", [])
+        ok = ok and assert_and_log(buttons, FieldSyntaxError("explorerConfig.buttons"))
+        manifest_mapping = None
         if guppy:
             ok = ok and assert_and_log(
                 guppy.get("dataType"),
                 FieldSyntaxError("explorerConfig.guppyConfig.dataType"),
             )
             manifest_mapping = guppy.get("manifestMapping")
-            ok = ok and assert_and_log(
-                manifest_mapping,
-                FieldSyntaxError("explorerConfig.guppyConfig.manifestMapping"),
-            )
 
-        buttons = exp_config.get("buttons", [])
-        ok = ok and assert_and_log(buttons, FieldSyntaxError("explorerConfig.buttons"))
         val_mapping = False
         for button in buttons:
             if button.get("enabled") and button.get("type") == "manifest":
@@ -131,10 +129,15 @@ def validate_gitops_syntax(gitops):
             )
 
     study_viewer = gitops.get("studyViewerConfig")
-    ok = ok and assert_and_log(study_viewer, FieldSyntaxError("studyViewerConfig"))
 
     if study_viewer:
-        checks = ["dataType", "listItemConfig", "rowAccessor"]
+        checks = [
+            "dataType",
+            "listItemConfig",
+            "rowAccessor",
+            "docDataType",
+            "fileDataType",
+        ]
         for viewer in study_viewer:
             ok = check_required_fields("studyViewerConfig", checks, viewer, ok)
 
@@ -144,7 +147,7 @@ def validate_gitops_syntax(gitops):
 def check_required_fields(path, checks, field, ok):
     for check in checks:
         ok = ok and assert_and_log(
-            field.get("check"), FieldSyntaxError(f"{path}.{check}")
+            field.get(check), FieldSyntaxError(f"{path}.{check}")
         )
     return ok
 
@@ -152,58 +155,65 @@ def check_required_fields(path, checks, field, ok):
 def check_field_value(path, checks, accepted_values, errors):
     for check in checks:
         if check not in accepted_values:
-            errors.append(FieldError("Invalid field {} in {}".format(check, path)))
-    return errors
+            errors.append(
+                FieldError("Field {} in {} not found in ETLmapping".format(check, path))
+            )
 
 
-def _validate_itemConfig(item_config, props, errors):
-    errors = check_field_value(
-        "studyViewerConfig.blockFields.(list/single)ItemConfig",
+def _validate_itemConfig(item_config, props, typ, errors):
+    check_field_value(
+        "studyViewerConfig.blockFields.{}ItemConfig".format(typ),
         item_config.get("blockFields", []),
         props,
         errors,
     )
-    errors = check_field_value(
-        "studyViewerConfig.tableFields.(list/single)ItemConfig",
+    check_field_value(
+        "studyViewerConfig.tableFields.{}ItemConfig".format(typ),
         item_config.get("tableFields", []),
         props,
         errors,
     )
-    return errors
 
 
-def _validate_studyViewerConfig_helper(viewer, type_prop_map, errors):
-    datatype = viewer.get("dataType")
-    props = type_prop_map.get(datatype, [])
+def _validate_studyViewer_datatypes(
+    viewer, datatype, type_prop_map, row_accessor, errors
+):
+    dtype = viewer.get(datatype)
+    props = type_prop_map.get(dtype, [])
     if not props:
         errors.append(
             FieldError(
-                "Invalid field {} in studyViewerConfig.dataType".format(datatype)
+                "Field {} in studyViewerConfig.{} not found in ETLmapping".format(
+                    dtype, datatype
+                )
+            )
+        )
+    if row_accessor not in props:
+        errors.append(
+            FieldError(
+                "rowAccessor {} not found in index with type {}".format(
+                    row_accessor, dtype
+                )
             )
         )
 
+
+def _validate_studyViewerConfig_helper(viewer, type_prop_map, errors):
+    dtype = viewer.get("dataType")
+    for datatype in ["dataType", "fileDataType", "docDataType"]:
+        _validate_studyViewer_datatypes(
+            viewer, datatype, type_prop_map, viewer["rowAccessor"], errors
+        )
+    props = type_prop_map.get(dtype, [])
     listitemconfig = viewer.get("listItemConfig")
-    errors = _validate_itemConfig(listitemconfig, props, errors)
+    _validate_itemConfig(listitemconfig, props, "list", errors)
     if viewer.get("singleItemConfig"):
-        errors = _validate_itemConfig(viewer.get("singleItemConfig"), props, errors)
-
-    for dtype, props in type_prop_map.items():
-        if viewer["rowAccessor"] not in props:
-            errors.append(
-                FieldError(
-                    "rowAccessor {} not found in index with type {}".format(
-                        viewer["rowAccessor"], dtype
-                    )
-                )
-            )
-
-    return errors
+        _validate_itemConfig(viewer.get("singleItemConfig"), props, "single", errors)
 
 
 def validate_studyViewerConfig(studyviewer, type_prop_map, errors):
     for viewer in studyviewer:
-        errors = _validate_studyViewerConfig_helper(viewer, type_prop_map, errors)
-    return errors
+        _validate_studyViewerConfig_helper(viewer, type_prop_map, errors)
 
 
 def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
@@ -213,7 +223,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
     if not props:
         errors.append(
             FieldError(
-                "Invalid field {} in explorerConfig.guppyConfig.dataType".format(
+                "Field {} in explorerConfig.guppyConfig.dataType not found in ETLmapping".format(
                     datatype
                 )
             )
@@ -221,13 +231,13 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
 
     tabs = explorer_config["filters"]["tabs"]
     for tab in tabs:
-        errors = check_field_value(
+        check_field_value(
             "explorerConfig.filters.tabs.fields", tab.get("fields", []), props, errors
         )
 
     table = explorer_config["table"]
     if table["enabled"]:
-        errors = check_field_value(
+        check_field_value(
             "explorerConfig.table.fields", table.get("fields", []), props, errors
         )
 
@@ -237,7 +247,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         if not resource_props:
             errors.append(
                 FieldError(
-                    "Invalid field {} in manifestMapping.resourceIndexType".format(
+                    "Field {} in manifestMapping.resourceIndexType not found in ETLMapping".format(
                         manifest_map.get("resourceIndexType")
                     )
                 )
@@ -245,7 +255,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         elif manifest_map.get("resourceIdField") not in resource_props:
             errors.append(
                 FieldError(
-                    "Invalid field {} in manifestMapping.resourceIdField".format(
+                    "Field {} in manifestMapping.resourceIdField not found in ETLmapping".format(
                         manifest_map.get("resourceIdField")
                     )
                 )
@@ -253,23 +263,18 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         # TODO
         # Also consider fields referenceIdFieldInResourceIndex and referenceIdFieldInDataIndex
 
-    return errors
-
 
 def validate_explorerConfig(gitops, type_prop_map, errors):
-    exploreConfig = gitops.get("explorerConfig") or gitops.get("dataExplorerConfig")
+    explorerConfig = gitops.get("explorerConfig") or gitops.get("dataExplorerConfig")
     # if explorerConfig exists, ignores (data/files)explorerConfig
-    if exploreConfig and type(exploreConfig) == list:
-        for config in exploreConfig:
-            errors = _validate_explorerConfig_helper(config, type_prop_map, errors)
+    if explorerConfig and type(explorerConfig) == list:
+        for config in explorerConfig:
+            _validate_explorerConfig_helper(config, type_prop_map, errors)
     else:
-        errors = _validate_explorerConfig_helper(exploreConfig, type_prop_map, errors)
+        _validate_explorerConfig_helper(explorerConfig, type_prop_map, errors)
         file_exp_config = gitops.get("fileExplorerConfig")
         if file_exp_config:
-            errors = _validate_explorerConfig_helper(
-                file_exp_config, type_prop_map, errors
-            )
-
+            _validate_explorerConfig_helper(file_exp_config, type_prop_map, errors)
     return errors
 
 
@@ -291,12 +296,19 @@ def validate_against_etl(gitops, mapping_file):
     errors = validate_explorerConfig(gitops, type_prop_map, [])
     studyviewer = gitops.get("studyViewerConfig")
     if studyviewer:
-        errors = validate_studyViewerConfig(studyviewer, type_prop_map, errors)
+        validate_studyViewerConfig(studyviewer, type_prop_map, errors)
 
     return errors
 
 
 def map_all_ES_index_props(mapping):
+    """
+    Args:
+        mapping (dict): The ETLmapping to parse
+
+    returns:
+        A mapping between each index type and all it's properties
+    """
     all_prop_map = {}
     for index in mapping:
         index_props = []
@@ -359,9 +371,9 @@ def validate_against_dictionary(gitops, data_dictionary):
     schema = model.dictionary.schema
 
     ok = True
-    graphql = gitops.get("graphql")
-    for item in graphql.get("boardCounts"):
-        node_count = item.get("graphql")
+    graphql = gitops["graphql"]
+    for item in graphql["boardCounts"]:
+        node_count = item["graphql"]
         # assumes form _{node}_count
         idx = node_count.rfind("_")
         node = node_count[1:idx]
@@ -371,8 +383,8 @@ def validate_against_dictionary(gitops, data_dictionary):
             "Node: {} in graphql.boardCounts not found in dictionary".format(node),
         )
 
-    for item in graphql.get("chartCounts"):
-        node_count = item.get("graphql")
+    for item in graphql["chartCounts"]:
+        node_count = item["graphql"]
         # assumes form _{node}_count
         idx = node_count.rfind("_")
         node = node_count[1:idx]
@@ -382,7 +394,7 @@ def validate_against_dictionary(gitops, data_dictionary):
         )
 
     for item in graphql.get("homepageChartNodes", []):
-        node = item.get("node")
+        node = item["node"]
         ok = ok and assert_and_log(
             schema.get(node) is not None,
             "Node: {} in graphql.homepageChartNodes not found in dictionary".format(
@@ -391,3 +403,19 @@ def validate_against_dictionary(gitops, data_dictionary):
         )
 
     return ok
+
+
+def comment_gitops_errors_on_pr(repository, pull_request_number, gitops_errors):
+    token = os.environ["GITHUB_TOKEN"]
+    headers = {"Authorization": "token {}".format(token)}
+
+    repository = repository.strip("/")
+    base_url = "https://api.github.com/repos/{}".format(repository)
+    logger.info("Checking pull request: {} #{}".format(repository, pull_request_number))
+    pr_comments_url = "{}/issues/{}/comments".format(base_url, pull_request_number)
+    contents = ""
+    for error in gitops_errors:
+        contents += "## Gitops-etlMapping : {}".format(error)
+    full_comment = "# {}\n{}".format("gitops.json", contents)
+
+    submit_comment(full_comment, headers, pr_comments_url)
