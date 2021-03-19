@@ -198,9 +198,12 @@ def _validate_studyViewer_datatypes(
 
 def _validate_studyViewerConfig_helper(viewer, type_prop_map, errors):
     dtype = viewer.get("dataType")
-    for datatype in (
-        ["dataType"] + viewer.get("fileDataType", []) + viewer.get("docDataType", [])
-    ):
+    checks = ["dataType"]
+    for optional in ["fileDataType", "docDataType"]:
+        if viewer.get(optional):
+            checks.append(optional)
+
+    for datatype in checks:
         _validate_studyViewer_datatypes(
             viewer, datatype, type_prop_map, viewer["rowAccessor"], errors
         )
