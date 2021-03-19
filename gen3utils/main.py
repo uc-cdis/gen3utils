@@ -13,7 +13,7 @@ from gen3utils.deployment_changes.generate_comment import (
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
 from gen3utils.gitops.gitops_validator import val_gitops
-from gen3utils.utils import comment_errors_on_pr
+from gen3utils.utils import comment_on_pr
 
 
 logger = get_logger("gen3utils", log_level="info")
@@ -59,7 +59,12 @@ def validate_portal_config(
             if not "GITHUB_TOKEN" in os.environ:
                 logger.error("Exiting: Missing GITHUB_TOKEN")
                 sys.exit(1)
-            comment_errors_on_pr(repository, pull_request_number, recorded_errors)
+            comment_on_pr(
+                repository,
+                pull_request_number,
+                "ERRORS FOUND IN gitops.json",
+                recorded_errors,
+            )
 
     if not ok:
         raise AssertionError(

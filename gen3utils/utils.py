@@ -6,7 +6,7 @@ from cdislogging import get_logger
 logger = get_logger("Submit comments to PR", log_level="info")
 
 
-def comment_errors_on_pr(repository, pull_request_number, file_name, errors):
+def comment_on_pr(repository, pull_request_number, message, comments):
     token = os.environ["GITHUB_TOKEN"]
     headers = {"Authorization": "token {}".format(token)}
 
@@ -15,9 +15,9 @@ def comment_errors_on_pr(repository, pull_request_number, file_name, errors):
     logger.info("Checking pull request: {} #{}".format(repository, pull_request_number))
     pr_comments_url = "{}/issues/{}/comments".format(base_url, pull_request_number)
     contents = ""
-    for error in errors:
-        contents += "## {}\n".format(error)
-    full_comment = "# {}\n{}".format(file_name, contents)
+    for comment in comments:
+        contents += "### {}\n".format(comment)
+    full_comment = "# {}\n{}".format(message, contents)
 
     submit_comment(full_comment, headers, pr_comments_url)
 
