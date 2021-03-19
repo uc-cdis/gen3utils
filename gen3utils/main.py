@@ -44,6 +44,7 @@ def validate_portal_config(
     with open(manifest_file, "r") as f1:
         manifest = json.loads(f1.read())
         dictionary_url = manifest.get("global", {}).get("dictionary_url")
+        hostname = manifest.get("global", {}).get("hostname")
         if dictionary_url is None:
             logger.error("No dictionary URL in manifest {}".format(manifest_file))
             return
@@ -62,7 +63,7 @@ def validate_portal_config(
             comment_on_pr(
                 repository,
                 pull_request_number,
-                "ERRORS FOUND IN: gitops.json",
+                "ERRORS FOUND IN: {} - gitops.json".format(hostname),
                 recorded_errors,
             )
 
