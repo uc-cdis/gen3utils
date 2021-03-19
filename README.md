@@ -23,7 +23,7 @@ gen3utils validate-etl-mapping etlMapping.yaml manifest.json
 
 ## Portal Configuration (gitops.json) validation
 
-Validate a `gitops.json` file against the dictionary URL specified in a `manifest.json` file and an etlMapping.yaml file. Adds a comment to a pull request listing all the errors encounter when validating against etlMapping.yaml
+Validate a `gitops.json` file against the dictionary URL specified in a `manifest.json` file and an etlMapping.yaml file. Adds a comment to a pull request listing all the errors encountered when validating against etlMapping.yaml
 ```
 gen3utils validate-portal-config etlMapping.yaml manifest.json gitops.json <username>/<repository> <pull request number>
 ```

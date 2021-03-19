@@ -57,11 +57,11 @@ def validate_gitops_syntax(gitops):
     if components:
         index = components.get("index")
         ok = ok and assert_and_log(index, FieldSyntaxError("components.index"))
-
-        homepage = index.get("homepageChartNodes")
-        ok = ok and assert_and_log(
-            index, FieldSyntaxError("components.homepageChartNodes")
-        )
+        if index:
+            homepage = index.get("homepageChartNodes", [])
+            ok = ok and assert_and_log(
+                index, FieldSyntaxError("components.homepageChartNodes")
+            )
         if homepage:
             for item in homepage:
                 checks = ["node", "name"]
@@ -135,8 +135,6 @@ def validate_gitops_syntax(gitops):
             "dataType",
             "listItemConfig",
             "rowAccessor",
-            "docDataType",
-            "fileDataType",
         ]
         for viewer in study_viewer:
             ok = check_required_fields("studyViewerConfig", checks, viewer, ok)
@@ -200,7 +198,9 @@ def _validate_studyViewer_datatypes(
 
 def _validate_studyViewerConfig_helper(viewer, type_prop_map, errors):
     dtype = viewer.get("dataType")
-    for datatype in ["dataType", "fileDataType", "docDataType"]:
+    for datatype in (
+        ["dataType"] + viewer.get("fileDataType", []) + viewer.get("docDataType", [])
+    ):
         _validate_studyViewer_datatypes(
             viewer, datatype, type_prop_map, viewer["rowAccessor"], errors
         )
@@ -403,19 +403,3 @@ def validate_against_dictionary(gitops, data_dictionary):
         )
 
     return ok
-
-
-def comment_gitops_errors_on_pr(repository, pull_request_number, gitops_errors):
-    token = os.environ["GITHUB_TOKEN"]
-    headers = {"Authorization": "token {}".format(token)}
-
-    repository = repository.strip("/")
-    base_url = "https://api.github.com/repos/{}".format(repository)
-    logger.info("Checking pull request: {} #{}".format(repository, pull_request_number))
-    pr_comments_url = "{}/issues/{}/comments".format(base_url, pull_request_number)
-    contents = ""
-    for error in gitops_errors:
-        contents += "## Gitops-etlMapping : {}".format(error)
-    full_comment = "# {}\n{}".format("gitops.json", contents)
-
-    submit_comment(full_comment, headers, pr_comments_url)
