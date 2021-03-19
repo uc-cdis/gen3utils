@@ -36,7 +36,7 @@ def test_check_field_value():
     accepted_vals = ["check1", "check2", "check3"]
     errors = []
     check_field_value("path", checks, accepted_vals, errors)
-    assert errors == [FieldError("Field check4 in path not found in ETLmapping")]
+    assert errors == [FieldError("Field [check4] in path not found in ETLmapping")]
 
     checks = ["check1", "check2"]
     accepted_vals = ["check1", "check2", "check3"]
@@ -50,10 +50,10 @@ def test_validate_explorerConfig(gitops_json, etl_prop_type_map):
     errors = validate_explorerConfig(gitops_json, etl_prop_type_map, [])
     assert errors == [
         FieldError(
-            "Field investigator_affiliation in explorerConfig.filters.tabs.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.filters.tabs.fields not found in ETLmapping"
         ),
         FieldError(
-            "Field investigator_affiliation in explorerConfig.table.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.table.fields not found in ETLmapping"
         ),
     ]
 
@@ -61,7 +61,7 @@ def test_validate_explorerConfig(gitops_json, etl_prop_type_map):
     errors = validate_explorerConfig(gitops_json, etl_prop_type_map, [])
     assert errors == [
         FieldError(
-            "Field investigator_affiliation in explorerConfig.filters.tabs.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.filters.tabs.fields not found in ETLmapping"
         )
     ]
 
@@ -84,10 +84,10 @@ def test_validate_against_etl(gitops_json):
     errors = validate_against_etl(gitops_json, "tests/data/etlMapping_gitops.yaml")
     assert errors == [
         FieldError(
-            "Field investigator_affiliation in explorerConfig.filters.tabs.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.filters.tabs.fields not found in ETLmapping"
         ),
         FieldError(
-            "Field investigator_affiliation in explorerConfig.table.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.table.fields not found in ETLmapping"
         ),
     ]
 
@@ -104,10 +104,10 @@ def test_validate_studyViewerConfig(gitops_json, etl_prop_type_map):
     validate_studyViewerConfig(study_viewer, etl_prop_type_map, errors)
     assert errors == [
         FieldError(
-            "Field project_id in studyViewerConfig.blockFields.listItemConfig not found in ETLmapping"
+            "Field [project_id] in studyViewerConfig.blockFields.listItemConfig not found in ETLmapping"
         ),
         FieldError(
-            "Field study_doi in studyViewerConfig.tableFields.singleItemConfig not found in ETLmapping"
+            "Field [study_doi] in studyViewerConfig.tableFields.singleItemConfig not found in ETLmapping"
         ),
     ]
 
@@ -116,13 +116,15 @@ def test_validate_studyViewerConfig(gitops_json, etl_prop_type_map):
     errors = []
     validate_studyViewerConfig(study_viewer, etl_prop_type_map, errors)
     assert errors == [
-        FieldError("Field error in studyViewerConfig.dataType not found in ETLmapping"),
-        FieldError("rowAccessor code not found in index with type error"),
         FieldError(
-            "Field project_id in studyViewerConfig.blockFields.listItemConfig not found in ETLmapping"
+            "Field [error] in studyViewerConfig.dataType not found in ETLmapping"
+        ),
+        FieldError("rowAccessor [code] not found in index with type error"),
+        FieldError(
+            "Field [project_id] in studyViewerConfig.blockFields.listItemConfig not found in ETLmapping"
         ),
         FieldError(
-            "Field study_doi in studyViewerConfig.tableFields.singleItemConfig not found in ETLmapping"
+            "Field [study_doi] in studyViewerConfig.tableFields.singleItemConfig not found in ETLmapping"
         ),
     ]
 
@@ -136,10 +138,10 @@ def test_val_gitops():
     errors, ok = val_gitops(data_dict, etlmapping, "tests/data/gitops_test.json")
     assert errors == [
         FieldError(
-            "Field investigator_affiliation in explorerConfig.filters.tabs.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.filters.tabs.fields not found in ETLmapping"
         ),
         FieldError(
-            "Field investigator_affiliation in explorerConfig.table.fields not found in ETLmapping"
+            "Field [investigator_affiliation] in explorerConfig.table.fields not found in ETLmapping"
         ),
     ]
     assert ok

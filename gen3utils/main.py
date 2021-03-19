@@ -62,7 +62,7 @@ def validate_portal_config(
             comment_on_pr(
                 repository,
                 pull_request_number,
-                "ERRORS FOUND IN gitops.json",
+                "ERRORS FOUND IN: gitops.json",
                 recorded_errors,
             )
 

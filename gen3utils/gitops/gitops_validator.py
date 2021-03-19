@@ -155,7 +155,9 @@ def check_field_value(path, checks, accepted_values, errors):
     for check in checks:
         if check not in accepted_values:
             errors.append(
-                FieldError("Field {} in {} not found in ETLmapping".format(check, path))
+                FieldError(
+                    "Field [{}] in {} not found in ETLmapping".format(check, path)
+                )
             )
 
 
@@ -182,7 +184,7 @@ def _validate_studyViewer_datatypes(
     if not props:
         errors.append(
             FieldError(
-                "Field {} in studyViewerConfig.{} not found in ETLmapping".format(
+                "Field [{}] in studyViewerConfig.{} not found in ETLmapping".format(
                     dtype, datatype
                 )
             )
@@ -190,7 +192,7 @@ def _validate_studyViewer_datatypes(
     if row_accessor not in props:
         errors.append(
             FieldError(
-                "rowAccessor {} not found in index with type {}".format(
+                "rowAccessor [{}] not found in index with type {}".format(
                     row_accessor, dtype
                 )
             )
@@ -227,7 +229,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
     if not props:
         errors.append(
             FieldError(
-                "Field {} in explorerConfig.guppyConfig.dataType not found in ETLmapping".format(
+                "Field [{}] in explorerConfig.guppyConfig.dataType not found in ETLmapping".format(
                     datatype
                 )
             )
@@ -251,7 +253,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         if not resource_props:
             errors.append(
                 FieldError(
-                    "Field {} in manifestMapping.resourceIndexType not found in ETLMapping".format(
+                    "Field [{}] in manifestMapping.resourceIndexType not found in ETLMapping".format(
                         manifest_map.get("resourceIndexType")
                     )
                 )
@@ -259,7 +261,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         elif manifest_map.get("resourceIdField") not in resource_props:
             errors.append(
                 FieldError(
-                    "Field {} in manifestMapping.resourceIdField not found in ETLmapping".format(
+                    "Field [{}] in manifestMapping.resourceIdField not found in ETLmapping".format(
                         manifest_map.get("resourceIdField")
                     )
                 )
