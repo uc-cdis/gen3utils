@@ -68,12 +68,6 @@ def test_validate_explorerConfig(gitops_json, etl_prop_type_map):
 
 def test_map_all_ES_index_props(gitops_etl_mapping, etl_prop_type_map):
     mapping = map_all_ES_index_props(gitops_etl_mapping.get("mappings"))
-    print("mapingsss")
-    for k, v in mapping.items():
-        print(k, v)
-    print("tests")
-    for k, v in etl_prop_type_map.items():
-        print(k, v)
     assert etl_prop_type_map == mapping
 
 
@@ -156,6 +150,5 @@ def test_val_gitops():
 
 
 def test_validate_syntax(gitops_json_syntax_error):
-    ok = True
     ok = validate_gitops_syntax(gitops_json_syntax_error)
     assert not ok

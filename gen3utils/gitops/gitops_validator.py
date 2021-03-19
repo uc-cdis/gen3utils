@@ -19,7 +19,9 @@ def val_gitops(data_dictionary, etl_mapping, gitops):
         gitops_config = json.loads(f.read())
     ok = validate_gitops_syntax(gitops_config)
     if not ok:
-        raise AssertionError("gitops validation failed. See errors in previous logs.")
+        raise AssertionError(
+            "Portal configuration failed. See errors in previous logs."
+        )
 
     ok = validate_against_dictionary(gitops_config, data_dictionary)
     recorded_errors = validate_against_etl(gitops_config, etl_mapping)
@@ -62,7 +64,6 @@ def validate_gitops_syntax(gitops):
             ok = ok and assert_and_log(
                 index, FieldSyntaxError("components.homepageChartNodes")
             )
-        if homepage:
             for item in homepage:
                 checks = ["node", "name"]
                 ok = check_required_fields(
