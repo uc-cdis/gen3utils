@@ -68,13 +68,6 @@ def gitops_json_syntax_error():
 
 
 @pytest.fixture(scope="function")
-def gitops_json_dict_error():
-    with open("tests/data/gitops_dict_error.json", "r") as f:
-        data = json.loads(f.read())
-    return data
-
-
-@pytest.fixture(scope="function")
 def etl_prop_type_map():
     type_map = {
         "subject": set(
