@@ -102,7 +102,6 @@ def validate_gitops_syntax(gitops):
             guppy, FieldSyntaxError("explorerConfig.guppyConfig")
         )
         buttons = exp_config.get("buttons", [])
-        ok = ok and assert_and_log(buttons, FieldSyntaxError("explorerConfig.buttons"))
         manifest_mapping = None
         if guppy:
             ok = ok and assert_and_log(
