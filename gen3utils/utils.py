@@ -16,7 +16,7 @@ def comment_on_pr(repository, pull_request_number, message, comments):
     pr_comments_url = "{}/issues/{}/comments".format(base_url, pull_request_number)
     contents = ""
     for comment in comments:
-        contents += "### {}\n".format(comment)
+        contents += "- {}\n".format(comment)
     full_comment = "# {}\n{}".format(message, contents)
 
     submit_comment(full_comment, headers, pr_comments_url)

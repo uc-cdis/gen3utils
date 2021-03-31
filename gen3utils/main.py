@@ -60,10 +60,11 @@ def validate_portal_config(
             if not "GITHUB_TOKEN" in os.environ:
                 logger.error("Exiting: Missing GITHUB_TOKEN")
                 sys.exit(1)
+            message_header = "{}: gitops.json\n :x: ETLMapping errors".format(hostname)
             comment_on_pr(
                 repository,
                 pull_request_number,
-                "ERRORS FOUND IN: {} - gitops.json".format(hostname),
+                message_header,
                 recorded_errors,
             )
 
