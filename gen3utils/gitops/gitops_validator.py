@@ -155,7 +155,7 @@ def check_field_value(path, checks, accepted_values, errors):
         if check not in accepted_values:
             errors.append(
                 FieldError(
-                    "Field [{}] in {} not found in ETLmapping".format(check, path)
+                    "Field [{}] in {} not found in etlMapping".format(check, path)
                 )
             )
 
@@ -183,7 +183,7 @@ def _validate_studyViewer_datatypes(
     if not props:
         errors.append(
             FieldError(
-                "Field [{}] in studyViewerConfig.{} not found in ETLmapping".format(
+                "Field [{}] in studyViewerConfig.{} not found in etlMapping".format(
                     dtype, datatype
                 )
             )
@@ -228,7 +228,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
     if not props:
         errors.append(
             FieldError(
-                "Field [{}] in explorerConfig.guppyConfig.dataType not found in ETLmapping".format(
+                "Field [{}] in explorerConfig.guppyConfig.dataType not found in etlMapping".format(
                     datatype
                 )
             )
@@ -252,7 +252,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         if not resource_props:
             errors.append(
                 FieldError(
-                    "Field [{}] in manifestMapping.resourceIndexType not found in ETLMapping".format(
+                    "Field [{}] in manifestMapping.resourceIndexType not found in etlMapping".format(
                         manifest_map.get("resourceIndexType")
                     )
                 )
@@ -260,7 +260,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         elif manifest_map.get("resourceIdField") not in resource_props:
             errors.append(
                 FieldError(
-                    "Field [{}] in manifestMapping.resourceIdField not found in ETLmapping".format(
+                    "Field [{}] in manifestMapping.resourceIdField not found in etlMapping".format(
                         manifest_map.get("resourceIdField")
                     )
                 )
@@ -309,7 +309,7 @@ def validate_against_etl(gitops, mapping_file):
 def map_all_ES_index_props(mapping):
     """
     Args:
-        mapping (dict): The ETLmapping to parse
+        mapping (dict): The etlMapping to parse
 
     returns:
         A mapping between each index type and all it's properties
