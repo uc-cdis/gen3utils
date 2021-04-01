@@ -10,9 +10,11 @@ from cdislogging import get_logger
 from gen3utils.deployment_changes.generate_comment import (
     comment_deployment_changes_on_pr,
 )
-
 from gen3utils.manifest.manifest_validator import validate_manifest as val_manifest
 from gen3utils.etl.etl_validator import validate_mapping
+from gen3utils.gitops.gitops_validator import val_gitops
+from gen3utils.utils import comment_on_pr
+
 
 logger = get_logger("gen3utils", log_level="info")
 
@@ -23,6 +25,57 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 @click.group()
 def main():
     """Utils for Gen3 cdis-manifest management."""
+
+
+@main.command()
+@click.argument("etl_mapping_file", type=str, nargs=1, required=True)
+@click.argument("manifest_file", type=str, nargs=1, required=True)
+@click.argument("portal_config_file", type=str, nargs=1, required=True)
+@click.argument("repository", type=str, nargs=1, required=False)
+@click.argument("pull_request_number", type=int, nargs=1, required=False)
+def validate_portal_config(
+    etl_mapping_file, manifest_file, portal_config_file, repository, pull_request_number
+):
+    """Validate a PORTAL_CONFIG_FILE against the dictionary specified in the MANIFEST_FILE
+    and an ETL_MAPPING_FILE"""
+
+    logger.info("Validating portal config file {}".format(portal_config_file))
+    dictionary_url = None
+    with open(manifest_file, "r") as f1:
+        manifest = json.loads(f1.read())
+        dictionary_url = manifest.get("global", {}).get("dictionary_url")
+        hostname = manifest.get("global", {}).get("hostname")
+        if dictionary_url is None:
+            logger.error("No dictionary URL in manifest {}".format(manifest_file))
+            return
+
+    recorded_errors, ok = val_gitops(
+        dictionary_url, etl_mapping_file, portal_config_file
+    )
+
+    if recorded_errors:
+        for err in recorded_errors:
+            logger.error("  - {}".format(err))
+        if repository and pull_request_number:
+            if not "GITHUB_TOKEN" in os.environ:
+                logger.error("Exiting: Missing GITHUB_TOKEN")
+                sys.exit(1)
+            message_header = "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(
+                hostname
+            )
+            comment_on_pr(
+                repository,
+                pull_request_number,
+                message_header,
+                recorded_errors,
+            )
+
+    if not ok:
+        raise AssertionError(
+            "Portal configuration mapping validation failed. See errors in previous logs."
+        )
+    else:
+        logger.info("  OK!")
 
 
 @main.command()

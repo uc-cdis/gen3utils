@@ -17,4 +17,4 @@ def assert_and_log(assertion_success, error_message):
     """
     if not assertion_success:
         logger.error(error_message)
-    return assertion_success
+    return bool(assertion_success)

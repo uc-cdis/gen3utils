@@ -8,7 +8,7 @@ from cdislogging import get_logger
 import gen3git
 
 from gen3utils.manifest.manifest_validator import version_is_branch
-
+from gen3utils.utils import submit_comment
 
 logger = get_logger("comment-deployment-changes", log_level="info")
 
@@ -297,9 +297,3 @@ def generate_comment(deployment_changes, services_on_branch):
         for service, items in deployment_changes.items():
             contents += "- {}\n  - {}\n".format(service, "\n  - ".join(items))
     return contents
-
-
-def submit_comment(contents, headers, pr_comments_url):
-    res = requests.post(pr_comments_url, json={"body": contents}, headers=headers)
-    if res.status_code != 201:
-        logger.error("Failed to write comment:", res.status_code, res.json())

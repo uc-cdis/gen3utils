@@ -1,0 +1,33 @@
+mappings:
+  - name: covid19_subject
+    doc_type: subject
+    type: aggregator
+    root: subject
+    props:
+      - name: project_id
+      - name: vital_status
+      - name: code
+    flatten_props:
+      - path: demographics
+        props:
+          - name: gender
+          - name: age
+    aggregated_props:
+      - name: image_location
+    parent_props:
+      - path: projects[project_name:name, project_url:url]
+      - path: studies[study_doi:study_doi]
+    injecting_props:
+      sample:
+        props:
+          - name: location
+          - name: continent
+  - name: covid19_dataset
+    doc_type: dataset
+    type: aggregator
+    root: project
+    props:
+      - name: code
+      - name: name
+    parent_props:
+      - path: programs[program_name:name]

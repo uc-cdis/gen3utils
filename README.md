@@ -2,11 +2,13 @@
 
 Utils for Gen3 commons management
 
+## Install with pip
+pip install gen3utils
+
 ## manifest.json validation
 
 Validate one or more `manifest.json` files:
 ```
-pip install gen3utils
 gen3utils validate-manifest cdis-manifest/*/manifest.json
 ```
 
@@ -16,9 +18,20 @@ The validation settings can be updated by modifying [this file](gen3utils/manife
 
 Validate an `etlMapping.yaml` file against the dictionary URL specified in a `manifest.json` file:
 ```
-pip install gen3utils
 gen3utils validate-etl-mapping etlMapping.yaml manifest.json
 ```
+
+## Portal Configuration (gitops.json) validation
+
+Validate a `gitops.json` file against the dictionary URL specified in a `manifest.json` file and an etlMapping.yaml file. Adds a comment to a pull request listing all the errors encountered when validating against etlMapping.yaml
+```
+gen3utils validate-portal-config etlMapping.yaml manifest.json gitops.json <username>/<repository> <pull request number>
+```
+To run without making a pull request comment
+```
+gen3utils validate-portal-config etlMapping.yaml manifest.json gitops.json
+```
+
 
 ## Comment on a PR with any deployment changes when updating manifest services
 

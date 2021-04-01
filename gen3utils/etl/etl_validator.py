@@ -262,8 +262,11 @@ def validate_path(
                 if str_fields is not None:
                     fields = str_fields.split(",")
                     for f in fields:
-                        src = f.split(":")[-1] if f.find(":") != -1 else f
-                        name = f.split(":")[0] if f.find(":") != -1 else f
+                        name, src = (
+                            [p.strip() for p in f.split(":")]
+                            if ":" in f
+                            else [f.strip()] * 2
+                        )
                         names.append(
                             validate_name_src(
                                 {"name": name, "src": src},
