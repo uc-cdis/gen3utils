@@ -669,6 +669,7 @@ python-versions = ">=3.5"
 [[package]]
 name = "sqlalchemy"
 version = "1.4.4"
+
 description = "Database Abstraction Library"
 category = "main"
 optional = false
@@ -782,7 +783,7 @@ s3log = ["aiobotocore"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "76745c158e7bd4b1f78694081c988106b233606de0af8cb51a869a5add6f1ade"
+content-hash = "7c13c3118316ead76efd7809e0be3c9d9957e79054ed394da23e80c955008e0b"
 
 [metadata.files]
 aiobotocore = [
@@ -1255,6 +1256,7 @@ sqlalchemy = [
     {file = "SQLAlchemy-1.4.4-cp39-cp39-win32.whl", hash = "sha256:e7ff3ac2e0acdf92639128ed0b38ceed370115e3bb412840fc8c9c28d0ac50b4"},
     {file = "SQLAlchemy-1.4.4-cp39-cp39-win_amd64.whl", hash = "sha256:d0cc8dcda237d9d801bee8737a8ce5394586364740b9a8482b466fadb9ab1ff3"},
     {file = "SQLAlchemy-1.4.4.tar.gz", hash = "sha256:7ba9c00c129dbb4fd026a1f2c943188db59c802612e49bc9bded426d8eb14bc0"},
+
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
