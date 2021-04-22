@@ -29,14 +29,15 @@ IGNORED_SERVICES = [
 # block is not the same as the repo name. services that are not
 # listed here are assumed to be in repo uc-cdis/<service name>.
 SERVICE_TO_REPO = {
-    "covid19-etl": "covid19-tools",
     "dashboard": "gen3-statics",
-    "nb-etl": "covid19-tools",
     "portal": "data-portal",
     "revproxy": "docker-nginx",
     "spark": "gen3-spark",
     "wts": "workspace-token-service",
     "metadata": "metadata-service",
+    "covid19-etl": "covid19-tools",
+    "nb-etl": "covid19-tools",
+    "covid19-bayes-model": "covid19model",
     "data-ingestion-pipeline": "bdcat-data-ingestion",
 }
 
