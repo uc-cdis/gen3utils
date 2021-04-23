@@ -53,8 +53,9 @@ def validate_gitops_syntax(gitops):
                 checks = ["graphql", "name", "plural"]
                 ok = check_required_fields("graphql.boardCounts", checks, item, ok)
 
-        chartcounts = graphql.get("chartCounts")
-        ok = ok and assert_and_log(chartcounts, FieldSyntaxError("graphql.chartCounts"))
+        ok = ok and assert_and_log(
+            "chartcounts" in graphql, FieldSyntaxError("graphql.chartCounts")
+        )
 
     components = gitops.get("components")
     ok = ok and assert_and_log(components, FieldSyntaxError("components"))
