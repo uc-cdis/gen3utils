@@ -338,21 +338,28 @@ def map_all_ES_index_props(mapping):
         parent_props = index.get("parent_props")
         if parent_props:
             for prop in parent_props:
-                item = prop.get("path")
-                # to extract values from a string like "subjects[subject_id:id,project_id]"
-                [_, str_props] = (
-                    list(filter(None, re.split(r"[\[\]]", item)))
-                    if "[" in item
-                    else [item, None]
-                )
-                if str_props is not None:
-                    props = str_props.split(",")
-                    index_props.extend(
-                        [
-                            p.split(":")[0].strip() if p.find(":") != -1 else p.strip()
-                            for p in props
-                        ]
+                # handle format "node1[id].node2[id]":
+                path_items = prop.get("path").split(".")
+                if "_ANY" in path_items:
+                    path_items.remove("_ANY")
+                # get the edge name and the property definition from line:
+                # subjects[subject_id:id,project_id]
+                for item in path_items:
+                    [_, str_props] = (
+                        list(filter(None, re.split(r"[\[\]]", item)))
+                        if "[" in item
+                        else [item, None]
                     )
+                    if str_props is not None:
+                        props = str_props.split(",")
+                        index_props.extend(
+                            [
+                                p.split(":")[0].strip()
+                                if p.find(":") != -1
+                                else p.strip()
+                                for p in props
+                            ]
+                        )
 
         all_prop_map[index.get("doc_type")] = set(index_props)
 

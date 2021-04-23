@@ -246,11 +246,12 @@ def validate_path(
         )
     else:
         for path in nodes_for_category_backrefs:
+            # handle format "node1[id].node2[id]":
             path_items = path.split(".")
             if "_ANY" in path_items:
                 path_items.remove("_ANY")
             for item in path_items:
-                # get the edge name and the property definition out of the line:
+                # get the edge name and the property definition from line:
                 # subjects[subject_id:id,project_id]
                 [edge, str_fields] = (
                     list(filter(None, re.split(r"[\[\]]", item)))
