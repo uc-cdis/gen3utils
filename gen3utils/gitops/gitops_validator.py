@@ -246,8 +246,8 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
             "explorerConfig.filters.tabs.fields", tab.get("fields", []), props, errors
         )
 
-    table = explorer_config["table"]
-    if table["enabled"]:
+    table = explorer_config.get("table", {})
+    if table.get("enabled", True):
         check_field_value(
             "explorerConfig.table.fields", table.get("fields", []), props, errors
         )
