@@ -54,7 +54,7 @@ def validate_gitops_syntax(gitops):
                 ok = check_required_fields("graphql.boardCounts", checks, item, ok)
 
         ok = ok and assert_and_log(
-            "chartcounts" in graphql, FieldSyntaxError("graphql.chartCounts")
+            "chartCounts" in graphql, FieldSyntaxError("graphql.chartCounts")
         )
 
     components = gitops.get("components")
@@ -73,12 +73,15 @@ def validate_gitops_syntax(gitops):
                     "components.index.homepage", checks, item, ok
                 )
 
+    explorer_enabled = gitops.get("featureFlags", {}).get("explorer", True)
     explorerconfig = gitops.get("explorerConfig")
     configs = []
     if not explorerconfig:
         dataConfig = gitops.get("dataExplorerConfig")
         fileConfig = gitops.get("fileExplorerConfig")
-        ok = ok and assert_and_log(dataConfig, FieldSyntaxError("(data)explorerConfig"))
+        ok = ok and assert_and_log(
+            dataConfig or not explorer_enabled, FieldSyntaxError("(data)explorerConfig")
+        )
         if dataConfig:
             configs.append(dataConfig)
         if fileConfig:
@@ -273,16 +276,15 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
 
 
 def validate_explorerConfig(gitops, type_prop_map, errors):
-    explorerConfig = gitops.get("explorerConfig") or gitops.get("dataExplorerConfig")
+    explorer_configs = gitops.get("explorerConfig", [])
     # if explorerConfig exists, ignores (data/files)explorerConfig
-    if explorerConfig and type(explorerConfig) == list:
-        for config in explorerConfig:
-            _validate_explorerConfig_helper(config, type_prop_map, errors)
-    else:
-        _validate_explorerConfig_helper(explorerConfig, type_prop_map, errors)
-        file_exp_config = gitops.get("fileExplorerConfig")
-        if file_exp_config:
-            _validate_explorerConfig_helper(file_exp_config, type_prop_map, errors)
+    if not explorer_configs:
+        if "dataExplorerConfig" in gitops:
+            explorer_configs.append(gitops["dataExplorerConfig"])
+        if "fileExplorerConfig" in gitops:
+            explorer_configs.append(gitops["fileExplorerConfig"])
+    for config in explorer_configs:
+        _validate_explorerConfig_helper(config, type_prop_map, errors)
     return errors
 
 
