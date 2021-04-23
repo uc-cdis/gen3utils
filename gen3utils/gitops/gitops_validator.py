@@ -44,7 +44,9 @@ def validate_gitops_syntax(gitops):
     ok = assert_and_log(graphql, FieldSyntaxError("graphql"))
 
     if graphql:
-        ok = ok and assert_and_log("boardCounts" in graphql, FieldSyntaxError("graphql.boardCounts"))
+        ok = ok and assert_and_log(
+            "boardCounts" in graphql, FieldSyntaxError("graphql.boardCounts")
+        )
         boardcounts = graphql.get("boardCounts", [])
         if boardcounts:
             for item in boardcounts:
