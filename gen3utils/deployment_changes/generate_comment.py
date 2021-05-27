@@ -179,8 +179,14 @@ def compare_versions_blocks(old_versions_block, new_versions_block, check_portal
         if (
             not old_version
             or not new_version
-            or "quay.io/cdis" not in old_version
-            or "quay.io/cdis" not in new_version
+            or (
+                "quay.io/cdis" not in old_version
+                and "dkr.ecr.us-east-1.amazonaws.com" not in old_version
+            )
+            or (
+                "quay.io/cdis" not in new_version
+                and "dkr.ecr.us-east-1.amazonaws.com" not in new_version
+            )
             or len(old_version.split(":")) < 2
             or len(new_version.split(":")) < 2
         ):
