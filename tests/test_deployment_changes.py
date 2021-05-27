@@ -10,6 +10,7 @@ def test_compare(monkeypatch):
     monkeypatch.setenv("GITHUB_TOKEN", "fake_token")
     old_versions = {
         "arborist": "quay.io/cdis/arborist:2.0.0",
+        "audit-service": "quay.io/cdis/audit-service:2.0.0",
         "fence": "quay.io/cdis/fence:2.0.0",
         "indexd": "quay.io/cdis/indexd:2.0.0",
         "peregrine": "quay.io/cdis/peregrine:2.0.0",
@@ -19,6 +20,7 @@ def test_compare(monkeypatch):
     }
     new_versions = {
         "arborist": "quay.io/cdis/arborist:3.0.0",  # new > old
+        "audit-service": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/audit-service:2.1.0",  # new > old + ECR image
         "fence": "quay.io/cdis/fence:1.0.0",  # new < old
         "indexd": "quay.io/cdis/indexd:2.0.0",  # new == old
         "peregrine": "quay.io/cdis/peregrine:feat_something",  # new on branch
@@ -33,6 +35,9 @@ def test_compare(monkeypatch):
     assert "arborist" in compared
     assert compared["arborist"]["old"] == "2.0.0"
     assert compared["arborist"]["new"] == "3.0.0"
+    assert "audit-service" in compared
+    assert compared["audit-service"]["old"] == "2.0.0"
+    assert compared["audit-service"]["new"] == "2.1.0"
     assert "fence" in compared
     assert compared["fence"]["old"] == "2.0.0"
     assert compared["fence"]["new"] == "1.0.0"
