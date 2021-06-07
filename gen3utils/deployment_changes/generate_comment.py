@@ -29,6 +29,7 @@ IGNORED_SERVICES = [
 # block is not the same as the repo name. services that are not
 # listed here are assumed to be in repo uc-cdis/<service name>.
 SERVICE_TO_REPO = {
+    "awshelper": "cloud-automation",
     "dashboard": "gen3-statics",
     "portal": "data-portal",
     "revproxy": "docker-nginx",
