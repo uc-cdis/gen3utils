@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gen3utils"
-version = "0.6.4"
+version = "0.6.5"
 description = "Gen3 Library Template"
 authors = ["CTDS UChicago <cdis@uchicago.edu>"]
 license = "Apache-2.0"
