@@ -2,7 +2,6 @@ import click
 import json
 import multiprocessing
 import os
-import sys
 import yaml
 
 from cdislogging import get_logger
@@ -57,9 +56,8 @@ def validate_portal_config(
         for err in recorded_errors:
             logger.error("  - {}".format(err))
         if repository and pull_request_number:
-            if not "GITHUB_TOKEN" in os.environ:
-                logger.error("Exiting: Missing GITHUB_TOKEN")
-                sys.exit(1)
+            if "GITHUB_TOKEN" in os.environ:
+                logger.warning("Missing GITHUB_TOKEN: not commenting on pull request.")
             message_header = "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(
                 hostname
             )
@@ -136,11 +134,6 @@ def post_deployment_changes(repository, pull_request_number):
     """
     Comment on a pull request with any deployment changes when updating manifest services. Also comment a warning if a service is on a branch.
     """
-
-    if not "GITHUB_TOKEN" in os.environ:
-        logger.error("Exiting: Missing GITHUB_TOKEN")
-        sys.exit(1)
-
     comment_deployment_changes_on_pr(repository, pull_request_number)
 
 

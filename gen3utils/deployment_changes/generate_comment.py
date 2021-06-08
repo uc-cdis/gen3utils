@@ -3,6 +3,7 @@ import os
 from packaging import version
 import re
 import requests
+import sys
 
 from cdislogging import get_logger
 import gen3git
@@ -51,8 +52,15 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
         repository (str): "<user>/<repo>"
         pull_request_number (str)
     """
-    token = os.environ["GITHUB_TOKEN"]
-    headers = {"Authorization": "token {}".format(token)}
+    if "GITHUB_TOKEN" in os.environ:
+        token = os.environ["GITHUB_TOKEN"]
+        headers = {"Authorization": "token {}".format(token)}
+    else:
+        logger.warning(
+            "Missing GITHUB_TOKEN: NOT commenting deployment changes on pull request. Continuing; but might fail later if the PR is not accessible."
+        )
+        token = None
+        headers = {}
 
     repository = repository.strip("/")
     base_url = "https://api.github.com/repos/{}".format(repository)
