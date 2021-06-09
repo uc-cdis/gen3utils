@@ -38,6 +38,7 @@ SERVICE_TO_REPO = {
     "wts": "workspace-token-service",
     "metadata": "metadata-service",
     "covid19-etl": "covid19-tools",
+    "covid19-notebook-etl": "covid19-tools",
     "nb-etl": "covid19-tools",
     "covid19-bayes-model": "covid19model",
     "data-ingestion-pipeline": "bdcat-data-ingestion",
