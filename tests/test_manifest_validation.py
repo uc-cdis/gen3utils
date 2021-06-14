@@ -3,6 +3,7 @@ from gen3utils.manifest.manifest_validator import (
     versions_validation,
     get_manifest_version,
     version_is_branch,
+    global_requirements_validation,
 )
 
 
@@ -174,3 +175,41 @@ def test_validate_manifest_block(manifest_validation_config):
     block_requirement = {"versions": {"guppy": "quay.io/cdis/guppy:0.3.0"}}
     ok = validate_manifest_block(block_requirement, manifest_validation_config["block"])
     assert not ok, "guppy without guppy block should pass validation"
+
+
+def test_global_requirements_validation(manifest_validation_config):
+    """
+    Test validation of sevices having requirements in the global section of manifest.json
+    """
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"netpolicy": "on"},
+    }
+    ok = global_requirements_validation(
+        mock_manifest["global"],
+        mock_manifest["versions"],
+        manifest_validation_config["global"],
+    )
+    assert ok, "hatchery with netpolicy==on should pass validation"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {},
+    }
+    ok = global_requirements_validation(
+        mock_manifest["global"],
+        mock_manifest["versions"],
+        manifest_validation_config["global"],
+    )
+    assert not ok, "hatchery with netpolicy absent should not pass validation"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"netpolicy": "off"},
+    }
+    ok = global_requirements_validation(
+        mock_manifest["global"],
+        mock_manifest["versions"],
+        manifest_validation_config["global"],
+    )
+    assert not ok, "hatchery with netpolicy!=on should not pass validation"

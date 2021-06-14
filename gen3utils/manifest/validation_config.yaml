@@ -74,3 +74,15 @@ versions:
     spark: "*"
     aws-es-proxy: "*"
   desc: "tube requires spark and aws-es-proxy"
+
+
+#################################
+# GLOBAL REQUIREMENT VALIDATION #
+#################################
+# Validation for services that need global policies to work with
+
+global:
+  services:
+    - hatchery:
+        netpolicy: "on"
+      desc: "hatchery service needs netpolicy==on in the global block in the manifest"

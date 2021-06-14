@@ -33,6 +33,15 @@ def validate_manifest(manifest, validation_requirement):
             )
             and ok
         )
+    if "global" in validation_requirement:
+        ok = (
+            global_requirements_validation(
+                manifest.get("global"),
+                manifest.get("versions"),
+                validation_requirement["global"],
+            )
+            and ok
+        )
 
     if not ok:
         raise AssertionError(
@@ -256,7 +265,7 @@ def versions_validation(manifest_versions, versions_requirements):
 
 
 def version_requirement_validation(
-    service_requirement, requirement_key_list, versions_manifest, current_validation
+    service_requirement, requirement_key_list, manifest_versions, current_validation
 ):
     """
     Validates version matches the requirement for a specific service
@@ -264,7 +273,7 @@ def version_requirement_validation(
     Args:
     service_requirement: service name and its version requirement
     requirement_key_list: list of service name which need validation
-    versions_manfiest: versions block from manifest
+    manifest_versions: versions block from manifest
     current_validation (str): service name and version that are currently being validated
 
     Return:
@@ -274,7 +283,7 @@ def version_requirement_validation(
 
     for required_service in requirement_key_list:
 
-        actual_version = get_manifest_version(versions_manifest, required_service)
+        actual_version = get_manifest_version(manifest_versions, required_service)
 
         if not actual_version:
             logger.error(
@@ -326,4 +335,40 @@ def version_requirement_validation(
                 )
                 and ok
             )
+    return ok
+
+
+def global_requirements_validation(
+    manifest_global, manifest_versions, global_requirements
+):
+    """
+    Validates whether a service has neccessary global requirements
+
+    Args:
+    manifest_global: manifest.json "global" section/block
+    manifest_versions: manifest.json "versions" section/block
+    global_requirements: the "global" requirement under
+            validation_config.yaml. Contains a key "Services" paired with
+            a list of service names and the requirements that are needed in the
+            global block of manifest for the service.
+
+    Return:
+        ok(bool): whether the validation succeeded.
+    """
+    ok = True
+    for service in global_requirements["services"]:
+        service_name = list(service.keys())[0]
+        if service_name not in manifest_versions:
+            continue
+        service_requirements = service[service_name]
+        for requirement in service_requirements:
+            if (requirement not in manifest_global) or (
+                manifest_global[requirement] != service_requirements[requirement]
+            ):
+                logger.error(
+                    "Service {} needs {}=={} in the global block of the manifest".format(
+                        service_name, requirement, service_requirements[requirement]
+                    )
+                )
+                ok = False
     return ok
