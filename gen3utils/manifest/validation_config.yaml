@@ -12,7 +12,7 @@ avoid:
 # BLOCK VALIDATION #
 ####################
 # Validation for the manifest blocks required by some services
-# The version should contains at least min or max.
+# The version should contain at least min or max.
 # /!\ max is < not <=. min is >=
 
 block:
@@ -26,11 +26,11 @@ block:
   hatchery:
     has: sidecar
     # hatchery may be in its own hatchery.json file
-    optional: "true"
+    optional: True
   # sower requires a sower block
-  sower: "true"
+  sower: True
   # guppy requires a guppy block
-  guppy: "true"
+  guppy: True
 
 
 ######################
