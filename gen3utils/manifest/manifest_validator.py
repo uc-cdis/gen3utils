@@ -33,15 +33,7 @@ def validate_manifest(manifest, validation_requirement):
             )
             and ok
         )
-    if "global" in validation_requirement:
-        ok = (
-            global_requirements_validation(
-                manifest.get("global"),
-                manifest.get("versions"),
-                validation_requirement["global"],
-            )
-            and ok
-        )
+    ok = misc_validations(manifest) and ok
 
     if not ok:
         raise AssertionError(
@@ -338,37 +330,26 @@ def version_requirement_validation(
     return ok
 
 
-def global_requirements_validation(
-    manifest_global, manifest_versions, global_requirements
-):
+def misc_validations(manifest):
     """
-    Validates whether a service has neccessary global requirements
+    Handles all the ad-hoc validations which are not structurally grouped in the validation_config.yml
 
     Args:
-    manifest_global: manifest.json "global" section/block
-    manifest_versions: manifest.json "versions" section/block
-    global_requirements: the "global" requirement under
-            validation_config.yaml. Contains a key "Services" paired with
-            a list of service names and the requirements that are needed in the
-            global block of manifest for the service.
+    manifest: manifest.json file as a dictionary
 
     Return:
         ok(bool): whether the validation succeeded.
     """
     ok = True
-    for service in global_requirements["services"]:
-        service_name = list(service.keys())[0]
-        if service_name not in manifest_versions:
-            continue
-        service_requirements = service[service_name]
-        for requirement in service_requirements:
-            if (requirement not in manifest_global) or (
-                manifest_global[requirement] != service_requirements[requirement]
-            ):
-                logger.error(
-                    "Service {} needs {}=={} in the global block of the manifest".format(
-                        service_name, requirement, service_requirements[requirement]
-                    )
-                )
-                ok = False
+
+    # Hatchery Service needs netpolicy feature to be turned on in the global block
+    if "hatchery" in manifest["versions"]:
+        if (
+            "netpolicy" not in manifest["global"]
+            or manifest["global"]["netpolicy"] != "on"
+        ):
+            logger.error(
+                "Hatchery needs netpolicy==on in the global block of the manifest"
+            )
+            ok = False
     return ok
