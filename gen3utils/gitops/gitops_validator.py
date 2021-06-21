@@ -75,7 +75,9 @@ def validate_gitops_syntax(gitops):
 
         # footerLogos is optional, but when present, it must be an array (list)
         footerLogos = components.get("footerLogos", [])
-        ok = ok and assert_and_log(isinstance(footerLogos, list), FieldError("footerLogos"))
+        ok = ok and assert_and_log(
+            isinstance(footerLogos, list), FieldError("footerLogos")
+        )
 
     explorer_enabled = gitops.get("featureFlags", {}).get("explorer", True)
     explorerconfig = gitops.get("explorerConfig")
