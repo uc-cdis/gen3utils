@@ -64,8 +64,8 @@ def validate_manifest_block(manifest, blocks_requirements):
                 manifest["versions"], service_name
             )
             is_branch = version_is_branch(block_requirement_version)
-            should_check_has = "has" in block and not is_branch
-            if "version" in block and not is_branch:
+            should_check_has = type(block) == dict and "has" in block and not is_branch
+            if type(block) == dict and "version" in block and not is_branch:
                 # If we have version requirement for a service, min or max is required.
                 # We are not validating branch or master branch
                 # min: Version in manifest is equal or greater than the verson in validation_config
@@ -99,13 +99,13 @@ def validate_manifest_block(manifest, blocks_requirements):
                         service_name in manifest
                         and block["has"] in manifest[service_name]
                         or service_name not in manifest
-                        and block.get("optional") == "true",
+                        and block.get("optional"),
                         error_msg,
                     )
                     and ok
                 )
 
-            if block == "true":
+            if block == True:
                 # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
