@@ -106,7 +106,7 @@ def validate_manifest_block(manifest, blocks_requirements):
                     and ok
                 )
 
-            if block:
+            if block == True:
                 # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
