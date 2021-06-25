@@ -344,7 +344,11 @@ def misc_validations(manifest):
 
     # Hatchery Service needs netpolicy feature to be turned on in the global block
     if "hatchery" in manifest["versions"]:
-        if (
+        shouldSkip = manifest["global"]["hostname"] in [
+            "qa-nde.planx-pla.net",
+            "niaiddata.org",
+        ]
+        if shouldSkip is False and (
             "netpolicy" not in manifest["global"]
             or manifest["global"]["netpolicy"] != "on"
         ):
