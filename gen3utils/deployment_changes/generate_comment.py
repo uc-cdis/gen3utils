@@ -296,7 +296,7 @@ def update_pr_links(repo_name, notes_list):
         match = matcher.match(note)
         if match:
             internal_pr_number = "#{}".format(match.groupdict()["pr_number"])
-            external_pr_number = "uc-cdis/{}{}".format(repo_name, internal_pr_number)
+            external_pr_number = "{}{}".format(repo_name, internal_pr_number)
             result.append(note.replace(internal_pr_number, external_pr_number))
         else:
             result.append(note)
