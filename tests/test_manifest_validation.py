@@ -3,6 +3,7 @@ from gen3utils.manifest.manifest_validator import (
     versions_validation,
     get_manifest_version,
     version_is_branch,
+    misc_validations,
 )
 
 
@@ -174,3 +175,52 @@ def test_validate_manifest_block(manifest_validation_config):
     block_requirement = {"versions": {"guppy": "quay.io/cdis/guppy:0.3.0"}}
     ok = validate_manifest_block(block_requirement, manifest_validation_config["block"])
     assert not ok, "guppy without guppy block should pass validation"
+
+
+def test_misc_requirements_validation():
+    """
+    Test validation of sevices having requirements in the global section of manifest.json
+    """
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"hostname": "", "netpolicy": "on"},
+    }
+    ok = misc_validations(mock_manifest)
+    assert ok, "hatchery with netpolicy==on should pass validation"
+
+    mock_manifest = {
+        "versions": {},
+        "global": {"hostname": ""},
+    }
+    ok = misc_validations(mock_manifest)
+    assert (
+        ok
+    ), "hatchery not in versions and netpolicy not in global should pass validation"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"hostname": ""},
+    }
+    ok = misc_validations(mock_manifest)
+    assert not ok, "hatchery with netpolicy absent should not pass validation"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"hostname": "", "netpolicy": "off"},
+    }
+    ok = misc_validations(mock_manifest)
+    assert not ok, "hatchery with netpolicy!=on should not pass validation"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"hostname": "niaiddata.org", "netpolicy": "off"},
+    }
+    ok = misc_validations(mock_manifest)
+    assert ok, "netpolicy validation should be skipped for niaiddata.org"
+
+    mock_manifest = {
+        "versions": {"hatchery": "quay.io/cdis/hatchery:0.1.0"},
+        "global": {"hostname": "qa-nde.planx-pla.net", "netpolicy": "off"},
+    }
+    ok = misc_validations(mock_manifest)
+    assert ok, "netpolicy validation should be skipped for qa-nde.planx-pla.net"

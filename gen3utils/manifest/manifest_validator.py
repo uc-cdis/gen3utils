@@ -33,6 +33,7 @@ def validate_manifest(manifest, validation_requirement):
             )
             and ok
         )
+    ok = misc_validations(manifest) and ok
 
     if not ok:
         raise AssertionError(
@@ -256,7 +257,7 @@ def versions_validation(manifest_versions, versions_requirements):
 
 
 def version_requirement_validation(
-    service_requirement, requirement_key_list, versions_manifest, current_validation
+    service_requirement, requirement_key_list, manifest_versions, current_validation
 ):
     """
     Validates version matches the requirement for a specific service
@@ -264,7 +265,7 @@ def version_requirement_validation(
     Args:
     service_requirement: service name and its version requirement
     requirement_key_list: list of service name which need validation
-    versions_manfiest: versions block from manifest
+    manifest_versions: versions block from manifest
     current_validation (str): service name and version that are currently being validated
 
     Return:
@@ -274,7 +275,7 @@ def version_requirement_validation(
 
     for required_service in requirement_key_list:
 
-        actual_version = get_manifest_version(versions_manifest, required_service)
+        actual_version = get_manifest_version(manifest_versions, required_service)
 
         if not actual_version:
             logger.error(
@@ -326,4 +327,35 @@ def version_requirement_validation(
                 )
                 and ok
             )
+    return ok
+
+
+def misc_validations(manifest):
+    """
+    Handles all the ad-hoc validations which are not structurally grouped in the validation_config.yml
+
+    Args:
+    manifest: manifest.json file as a dictionary
+
+    Return:
+        ok(bool): whether the validation succeeded.
+    """
+    ok = True
+
+    # Hatchery Service needs network policies to be turned on in the global block
+    if "hatchery" in manifest["versions"]:
+        shouldSkip = manifest["global"]["hostname"] in [
+            # the NDE has a special setup; network policies must be turned off
+            # to avoid cross-namespace communication issues
+            "qa-nde.planx-pla.net",
+            "niaiddata.org",
+        ]
+        if shouldSkip is False and (
+            "netpolicy" not in manifest["global"]
+            or manifest["global"]["netpolicy"] != "on"
+        ):
+            logger.error(
+                "Hatchery needs netpolicy==on in the global block of the manifest"
+            )
+            ok = False
     return ok
