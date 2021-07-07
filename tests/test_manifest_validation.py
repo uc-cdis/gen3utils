@@ -78,7 +78,7 @@ def test_versions_validation_needs(manifest_validation_config):
     versions_block = {
         "sower": "quay.io/cdis/sower:0.3.0",
         "guppy": "quay.io/cdis/guppy:0.3.0",
-        "aws-es-proxy": "abutaha/aws-es-proxy:0.8",
+        "aws-es-proxy": "quay.io/cdis/aws-es-proxy:0.8",
     }
     ok = versions_validation(versions_block, manifest_validation_config["versions"])
     assert ok, "sower + guppy + aws-es-proxy should pass validation"
