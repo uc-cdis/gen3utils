@@ -56,17 +56,18 @@ def validate_portal_config(
         for err in recorded_errors:
             logger.error("  - {}".format(err))
         if repository and pull_request_number:
-            if "GITHUB_TOKEN" in os.environ:
+            if not "GITHUB_TOKEN" in os.environ:
                 logger.warning("Missing GITHUB_TOKEN: not commenting on pull request.")
-            message_header = "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(
-                hostname
-            )
-            comment_on_pr(
-                repository,
-                pull_request_number,
-                message_header,
-                recorded_errors,
-            )
+            else:
+                message_header = (
+                    "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(hostname)
+                )
+                comment_on_pr(
+                    repository,
+                    pull_request_number,
+                    message_header,
+                    recorded_errors,
+                )
 
     if not ok:
         raise AssertionError(
