@@ -3,7 +3,6 @@ import re
 from cdislogging import get_logger
 from gen3utils.assertion import assert_and_log
 
-
 logger = get_logger("validate-manifest", log_level="info")
 
 
@@ -81,8 +80,7 @@ def validate_manifest_block(manifest, blocks_requirements):
 
                 if min_version and max_version:
                     should_check_has = (
-                        block_requirement_version >= min_version
-                        and block_requirement_version < max_version
+                        min_version <= block_requirement_version < max_version
                     )
                 elif min_version:
                     should_check_has = block_requirement_version >= min_version
@@ -106,7 +104,7 @@ def validate_manifest_block(manifest, blocks_requirements):
                     and ok
                 )
 
-            if block == True:
+            if block is True:
                 # Validation to check if a block exists in cdis-manifest
                 ok = (
                     assert_and_log(
@@ -239,8 +237,9 @@ def versions_validation(manifest_versions, versions_requirements):
             elif (
                 "min" in required_version
                 and "max" in required_version
-                and version.parse(required_version["min"]) <= actual_version
-                and actual_version < version.parse(required_version["max"])
+                and version.parse(required_version["min"])
+                <= actual_version
+                < version.parse(required_version["max"])
             ):
                 # if service is min_requirement <= service_version < max_requirement, other services should matches the version requirements
                 ok = (
@@ -274,9 +273,7 @@ def version_requirement_validation(
     ok = True
 
     for required_service in requirement_key_list:
-
         actual_version = get_manifest_version(manifest_versions, required_service)
-
         if not actual_version:
             logger.error(
                 'Service "{}" not in manifest but required to validate "{}" with "{}"'.format(
@@ -316,7 +313,6 @@ def version_requirement_validation(
                 assert_and_log(
                     version.parse(service_requirement[required_service]["min"])
                     <= actual_version
-                    and actual_version
                     < version.parse(service_requirement[required_service]["max"]),
                     'Service "{}" version "{}" does not respect requirement "{}" for "{}"'.format(
                         required_service,

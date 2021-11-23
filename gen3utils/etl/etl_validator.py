@@ -203,7 +203,7 @@ def validate_name_src(
             )
         )
     else:
-        valid_fields = set(["source_node"])  # built-in fields
+        valid_fields = {"source_node"}  # built-in fields
         if path:
             path_items = path.split(".")
             valid_fields.update(nodes_with_props.get(path_items[-1], []))
@@ -364,6 +364,11 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
                     index,
                     nodes_for_category,
                 )
+        if "project_id" not in index.props and m.get("type") == "aggregator":
+            recorded_errors.append(
+                PropertiesError(f"project_id is not found in index {index.name}")
+            )
+
     for m in mappings.get("mappings"):
         joining_props = m.get("joining_props", [])
         validate_joining_list_props(joining_props, recorded_errors, indices)
