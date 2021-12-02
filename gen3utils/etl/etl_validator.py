@@ -364,7 +364,11 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
                     index,
                     nodes_for_category,
                 )
-        if "project_id" not in index.props and m.get("type") == "aggregator":
+        if (
+            m.get("type") == "aggregator"
+            and m.get("root") != "project"
+            and "project_id" not in index.props
+        ):
             recorded_errors.append(
                 PropertiesError(f"project_id is not found in index {index.name}")
             )
