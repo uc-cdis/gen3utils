@@ -39,8 +39,7 @@ SERVICE_TO_REPO = {
     "metadata": "metadata-service",
     "covid19-etl": "covid19-tools",
     "covid19-notebook-etl": "covid19-tools",
-    "nb-etl": "covid19-tools",
-    "covid19-bayes-model": "covid19model",
+    "covid19-bayes": "covid19-tools",
     "data-ingestion-pipeline": "bdcat-data-ingestion",
     "datareplicate": "dcf-dataservice",
 }
