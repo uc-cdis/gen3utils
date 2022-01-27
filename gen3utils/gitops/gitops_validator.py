@@ -310,6 +310,12 @@ def validate_against_etl(gitops, mapping_file):
         mappings = yaml.safe_load(f)
     mapping = mappings.get("mappings")
     type_prop_map = map_all_ES_index_props(mapping)
+    """
+    for k in type_prop_map.keys():
+        print(k)
+        for v in type_prop_map[k]:
+            print("  " + v)
+    """
     errors = validate_explorerConfig(gitops, type_prop_map, [])
     studyviewer = gitops.get("studyViewerConfig")
     if studyviewer:
@@ -335,7 +341,7 @@ def map_all_ES_index_props(mapping):
         index_props.extend(_extract_props(agg_props))
         join_props = index.get("joining_props", [])
         for indx in join_props:
-            index_props.extend(_extract_props(index.get("props")))
+            index_props.extend(_extract_props(indx.get("props")))
         inject_props = index.get("injecting_props", {})
         for node, props in inject_props.items():
             index_props.extend(_extract_props(props.get("props")))
