@@ -1,3 +1,9 @@
+"""
+Comment deployment changes and breaking changes on PRs that update service versions.
+Also warn about services pinned to a branch and services that are being downgraded.
+"""
+
+
 import json
 import os
 from packaging import version
@@ -9,7 +15,7 @@ from cdislogging import get_logger
 import gen3git
 
 from gen3utils.manifest.manifest_validator import version_is_branch
-from gen3utils.utils import submit_comment
+from gen3utils.utils import submit_comment, version_is_monthly_release
 
 logger = get_logger("comment-deployment-changes", log_level="info")
 
@@ -110,14 +116,20 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
                 new_versions_block,
                 old_is_nde_portal == new_is_nde_portal,
             )
-            deployment_changes = get_deployment_changes(
+            deployment_changes, breaking_changes = get_important_changes(
                 compared_versions, token, new_is_nde_portal
             )
+            downgraded_services = get_downgraded_services(compared_versions)
         else:
             # if this is a new file, there's nothing to compare
             deployment_changes = {}
+            breaking_changes = {}
+            downgraded_services = {}
         contents = generate_comment(
-            deployment_changes, check_services_on_branch(new_versions_block)
+            deployment_changes,
+            breaking_changes,
+            check_services_on_branch(new_versions_block),
+            downgraded_services,
         )
         if contents:
             full_comment += "# {}\n{}".format(file_info["filename"], contents)
@@ -213,10 +225,11 @@ def compare_versions_blocks(old_versions_block, new_versions_block, check_portal
     return res
 
 
-def get_deployment_changes(versions_dict, token, is_nde_portal):
+def get_important_changes(versions_dict, token, is_nde_portal):
     """
     Uses the gen3git utility to get the release notes between the old and new
-    versions for each service, and returns the deployment changes only.
+    versions for each service, and returns the deployment changes and breaking
+    changes only.
 
     Args:
         versions_dict (dict):
@@ -224,6 +237,13 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 <service name>: { "old": <version>, "new": <version> }
             }
         token (string): token with read and write access to the repo
+
+    Return:
+        (dict, dict) tuple:
+            (
+                {<service>: [<deployment change 1>, <deployment change 2>]},
+                {<service>: [<breaking change 1>, <breaking change 2>]}
+            )
     """
 
     class Gen3GitArgs(object):
@@ -233,7 +253,8 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
             self.from_tag = from_tag
             self.to_tag = to_tag
 
-    res = {}
+    deployment_changes = {}
+    breaking_changes = {}
     for service, versions in versions_dict.items():
         # only get the deployment changes if the new version is more
         # recent than the old version. ignore services on a branch
@@ -253,7 +274,7 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 release_notes = gen3git.main(args)
                 if not release_notes:
                     raise Exception("gen3git did not return release notes")
-            except:
+            except Exception:
                 logger.error(
                     "While checking service '{}', repo '{}', unable to get release notes with gen3git:".format(
                         service, repo_name
@@ -262,8 +283,27 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
                 raise
             notes = release_notes.get("deployment changes")
             if notes:
-                res[service] = update_pr_links(repo_name, notes)
-    return res
+                deployment_changes[service] = update_pr_links(repo_name, notes)
+            notes = release_notes.get("breaking changes")
+            if notes:
+                breaking_changes[service] = update_pr_links(repo_name, notes)
+    return deployment_changes, breaking_changes
+
+
+def get_downgraded_services(compared_versions):
+    """
+    Return: list of downgraded services names
+    """
+    downgraded_services = set()
+    for service, versions in compared_versions.items():
+        old_is_monthly = version_is_monthly_release(versions["old"])
+        new_is_monthly = version_is_monthly_release(versions["new"])
+        if old_is_monthly != new_is_monthly:
+            # one is a monthly release, the other is not: we can't compare
+            continue
+        elif version.parse(versions["new"]) < version.parse(versions["old"]):
+            downgraded_services.add(service)
+    return downgraded_services
 
 
 def check_services_on_branch(versions_block):
@@ -302,15 +342,25 @@ def update_pr_links(repo_name, notes_list):
     return result
 
 
-def generate_comment(deployment_changes, services_on_branch):
+def generate_comment(
+    deployment_changes, breaking_changes, services_on_branch, downgraded_services
+):
     # TODO: edit the previous comment instead of posting a new one
     contents = ""
     if services_on_branch:
         contents += "## :warning: Services on branch\n- {}\n".format(
             "\n- ".join(services_on_branch)
         )
+    if downgraded_services:
+        contents += "## :warning: Services are being downgraded\n- {}\n".format(
+            "\n- ".join(downgraded_services)
+        )
     if deployment_changes:
         contents += "## Deployment changes\n"
         for service, items in deployment_changes.items():
+            contents += "- {}\n  - {}\n".format(service, "\n  - ".join(items))
+    if breaking_changes:
+        contents += "## Breaking changes\n"
+        for service, items in breaking_changes.items():
             contents += "- {}\n  - {}\n".format(service, "\n  - ".join(items))
     return contents

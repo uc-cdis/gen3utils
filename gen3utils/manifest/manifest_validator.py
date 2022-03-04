@@ -1,7 +1,9 @@
 from packaging import version
 import re
 from cdislogging import get_logger
+
 from gen3utils.assertion import assert_and_log
+from gen3utils.utils import version_is_monthly_release
 
 logger = get_logger("validate-manifest", log_level="info")
 
@@ -144,7 +146,7 @@ def get_manifest_version(
                 return service_version
             try:
                 return version.parse(service_version)
-            except:
+            except Exception:
                 if warn:
                     logger.warning(
                         "Cannot parse version '{}', returning string type".format(
@@ -175,8 +177,7 @@ def version_is_branch(version, release_tag_are_branches=True):
 
     # check if it's a release tag
     if not is_branch and release_tag_are_branches:
-        reg = re.compile("^[0-9]{4}.[0-9]{2}$")
-        is_branch = bool(reg.match(str(version)))
+        is_branch = version_is_monthly_release(version)
 
     return is_branch
 
