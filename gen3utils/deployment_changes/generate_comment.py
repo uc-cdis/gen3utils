@@ -1,5 +1,6 @@
 """
-Comment deployment changes and breaking changes on PRs that update service versions
+Comment deployment changes and breaking changes on PRs that update service versions.
+Also warn about services pinned to a branch and services that are being downgraded.
 """
 
 
