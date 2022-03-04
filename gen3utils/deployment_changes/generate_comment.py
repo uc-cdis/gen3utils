@@ -14,7 +14,7 @@ from cdislogging import get_logger
 import gen3git
 
 from gen3utils.manifest.manifest_validator import version_is_branch
-from gen3utils.utils import submit_comment
+from gen3utils.utils import submit_comment, version_is_monthly_release
 
 logger = get_logger("comment-deployment-changes", log_level="info")
 
@@ -118,14 +118,17 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
             deployment_changes, breaking_changes = get_deployment_changes(
                 compared_versions, token, new_is_nde_portal
             )
+            downgraded_services = get_downgraded_services(compared_versions)
         else:
             # if this is a new file, there's nothing to compare
             deployment_changes = {}
             breaking_changes = {}
+            downgraded_services = {}
         contents = generate_comment(
             deployment_changes,
             breaking_changes,
             check_services_on_branch(new_versions_block),
+            downgraded_services,
         )
         if contents:
             full_comment += "# {}\n{}".format(file_info["filename"], contents)
@@ -285,6 +288,22 @@ def get_deployment_changes(versions_dict, token, is_nde_portal):
     return deployment_changes, breaking_changes
 
 
+def get_downgraded_services(compared_versions):
+    """
+    Return: list of downgraded services names
+    """
+    downgraded_services = set()
+    for service, versions in compared_versions.items():
+        old_is_monthly = version_is_monthly_release(versions["old"])
+        new_is_monthly = version_is_monthly_release(versions["new"])
+        if old_is_monthly != new_is_monthly:
+            # one is a monthly release, the other is not: we can't compare
+            continue
+        elif version.parse(versions["new"]) < version.parse(versions["old"]):
+            downgraded_services.add(service)
+    return downgraded_services
+
+
 def check_services_on_branch(versions_block):
     """
     Returns the list of all services that are on a branch.
@@ -321,12 +340,18 @@ def update_pr_links(repo_name, notes_list):
     return result
 
 
-def generate_comment(deployment_changes, breaking_changes, services_on_branch):
+def generate_comment(
+    deployment_changes, breaking_changes, services_on_branch, downgraded_services
+):
     # TODO: edit the previous comment instead of posting a new one
     contents = ""
     if services_on_branch:
         contents += "## :warning: Services on branch\n- {}\n".format(
             "\n- ".join(services_on_branch)
+        )
+    if downgraded_services:
+        contents += "## :warning: Services are being downgraded\n- {}\n".format(
+            "\n- ".join(downgraded_services)
         )
     if deployment_changes:
         contents += "## Deployment changes\n"

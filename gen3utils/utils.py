@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 
 from cdislogging import get_logger
@@ -26,3 +27,8 @@ def submit_comment(contents, headers, pr_comments_url):
     res = requests.post(pr_comments_url, json={"body": contents}, headers=headers)
     if res.status_code != 201:
         logger.error("Failed to write comment:", res.status_code, res.json())
+
+
+def version_is_monthly_release(version):
+    reg = re.compile("^[0-9]{4}.[0-9]{2}$")
+    return bool(reg.match(str(version)))

@@ -3,11 +3,11 @@ import os
 from gen3utils.deployment_changes.generate_comment import (
     compare_versions_blocks,
     check_services_on_branch,
+    get_downgraded_services,
 )
 
 
-def test_compare(monkeypatch):
-    monkeypatch.setenv("GITHUB_TOKEN", "fake_token")
+def get_test_versions():
     old_versions = {
         "arborist": "quay.io/cdis/arborist:2.0.0",
         "audit-service": "quay.io/cdis/audit-service:2.0.0",
@@ -28,6 +28,12 @@ def test_compare(monkeypatch):
         "pidgin": "quay.io/cdis/pidgin:2.0.0",  # new service
         "ambassador": "quay.io/cdis/hello-branch",  # branch to ignore
     }
+    return old_versions, new_versions
+
+
+def test_compare_versions(monkeypatch):
+    monkeypatch.setenv("GITHUB_TOKEN", "fake_token")
+    old_versions, new_versions = get_test_versions()
 
     compared = compare_versions_blocks(old_versions, new_versions, True)
     print("Compared versions:", compared)
@@ -52,6 +58,23 @@ def test_compare(monkeypatch):
     assert "pidgin" not in compared
     assert "ambassador" not in compared
 
+
+def test_services_on_branch():
+    _, new_versions = get_test_versions()
     services_on_branch = check_services_on_branch(new_versions)
     print("Services on branch:", services_on_branch)
     assert services_on_branch == ["peregrine", "sheepdog"]
+
+
+def test_downgraded_services():
+    compared_versions = {
+        "upgraded-semver": {"old": "1.0", "new": "2.0.0"},
+        "downgraded-semver": {"old": "3", "new": "2.0.0"},
+        "upgraded-monthly": {"old": "2022.02", "new": "2022.03"},
+        "downgraded-monthly": {"old": "2022.02", "new": "2021.03"},
+        "upgraded-mixed": {"old": "2020.03", "new": "3.3.1"},
+        "downgraded-mixed": {"old": "3.3.1", "new": "2020.03"},
+    }
+    downgraded_services = get_downgraded_services(compared_versions)
+    expected = ["downgraded-semver", "downgraded-monthly"]
+    assert sorted(downgraded_services) == sorted(expected)
