@@ -144,7 +144,7 @@ def get_manifest_version(
                 return service_version
             try:
                 return version.parse(service_version)
-            except:
+            except Exception:
                 if warn:
                     logger.warning(
                         "Cannot parse version '{}', returning string type".format(
