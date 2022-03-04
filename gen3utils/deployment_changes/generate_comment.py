@@ -116,7 +116,7 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
                 new_versions_block,
                 old_is_nde_portal == new_is_nde_portal,
             )
-            deployment_changes, breaking_changes = get_deployment_changes(
+            deployment_changes, breaking_changes = get_important_changes(
                 compared_versions, token, new_is_nde_portal
             )
             downgraded_services = get_downgraded_services(compared_versions)
@@ -225,10 +225,11 @@ def compare_versions_blocks(old_versions_block, new_versions_block, check_portal
     return res
 
 
-def get_deployment_changes(versions_dict, token, is_nde_portal):
+def get_important_changes(versions_dict, token, is_nde_portal):
     """
     Uses the gen3git utility to get the release notes between the old and new
-    versions for each service, and returns the deployment changes only.
+    versions for each service, and returns the deployment changes and breaking
+    changes only.
 
     Args:
         versions_dict (dict):
