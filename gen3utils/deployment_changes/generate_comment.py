@@ -46,7 +46,6 @@ SERVICE_TO_REPO = {
     "covid19-etl": "covid19-tools",
     "covid19-notebook-etl": "covid19-tools",
     "covid19-bayes": "covid19-tools",
-    "data-ingestion-pipeline": "bdcat-data-ingestion",
     "datareplicate": "dcf-dataservice",
 }
 
