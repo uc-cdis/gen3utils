@@ -26,7 +26,9 @@ def comment_on_pr(repository, pull_request_number, message, comments):
 def submit_comment(contents, headers, pr_comments_url):
     res = requests.post(pr_comments_url, json={"body": contents}, headers=headers)
     if res.status_code != 201:
-        logger.error("Failed to write comment:", res.status_code, res.json())
+        raise Exception(
+            "Failed to write comment: {} {}".format(res.status_code, res.json())
+        )
 
 
 def version_is_monthly_release(version):
