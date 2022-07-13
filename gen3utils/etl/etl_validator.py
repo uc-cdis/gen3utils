@@ -351,6 +351,20 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
         node_name = m.get("root")
         for key, value in m.items():
             if key.endswith("props"):
+                if key not in [
+                    "props",
+                    "flatten_props",
+                    "parent_props",
+                    "nested_props",
+                    "joining_props",
+                    "aggregated_props",
+                    "injecting_props",
+                ]:
+                    recorded_errors.append(
+                        MappingError(
+                            f"{key} is not a valid property type", "PropertyType"
+                        )
+                    )
                 root_path = (
                     labels_to_back_refs.get(node_name) if key == "props" else None
                 )
