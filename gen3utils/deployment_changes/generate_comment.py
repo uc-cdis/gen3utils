@@ -47,6 +47,8 @@ SERVICE_TO_REPO = {
     "covid19-notebook-etl": "covid19-tools",
     "covid19-bayes": "covid19-tools",
     "datareplicate": "dcf-dataservice",
+    "cedar-wrapper": "cedar-wrapper-service",
+    "kayako-wrapper": "kayako-wrapper-service",
 }
 
 
