@@ -30,6 +30,7 @@ IGNORED_SERVICES = [
     "jupyterhub",
     "nb2",
     "access-backend",
+    "acronymbot",
 ]
 
 # update this config if the service name in the manifest "versions"
