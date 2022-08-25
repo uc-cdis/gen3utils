@@ -22,7 +22,8 @@ def validate_manifest(manifest, validation_requirement):
     if hostname in validation_requirement.get("avoid", []):
         services_to_skip = validation_requirement["avoid"][hostname]
         for s in services_to_skip:
-            del manifest["versions"][s]
+            if s in manifest["versions"]:
+                del manifest["versions"][s]
 
     ok = True
     if "block" in validation_requirement:
