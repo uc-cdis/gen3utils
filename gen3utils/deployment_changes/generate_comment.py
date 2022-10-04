@@ -50,6 +50,7 @@ SERVICE_TO_REPO = {
     "datareplicate": "dcf-dataservice",
     "cedar-wrapper": "cedar-wrapper-service",
     "kayako-wrapper": "kayako-wrapper-service",
+    "frontend-framework": "gen3-frontend-framework",
 }
 
 
