@@ -17,7 +17,6 @@ logger = get_logger("validate-portal-config", log_level="info")
 def val_gitops(data_dictionary, etl_mapping, gitops):
     with open(gitops, "r") as f:
         gitops_config = json.loads(f.read())
-        print(gitops_config)
     ok = validate_gitops_syntax(gitops_config)
     if not ok:
         raise AssertionError(
@@ -310,7 +309,10 @@ def validate_against_etl(gitops, mapping_file):
     with open(mapping_file) as f:
         mappings = yaml.safe_load(f)
     mapping = mappings.get("mappings")
-    print(mapping)
+    print("Mapping: " + str(mapping))
+    for key in mapping:
+        value = [key["doc_type"]]
+    print("Values: " + str(value))
     type_prop_map = map_all_ES_index_props(mapping)
     errors = validate_explorerConfig(gitops, type_prop_map, [])
     studyviewer = gitops.get("studyViewerConfig")
