@@ -309,7 +309,7 @@ def validate_against_etl(gitops, mapping_file):
     with open(mapping_file) as f:
         mappings = yaml.safe_load(f)
     mapping = mappings.get("mappings")
-    print("Mapping: " + (mapping))
+    print("Mapping: " + str(mapping))
     props = []
     for key in mapping:
         value = [key["doc_type"]]
