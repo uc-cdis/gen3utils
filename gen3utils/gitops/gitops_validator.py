@@ -314,7 +314,7 @@ def validate_against_etl(gitops, mapping_file):
     for key in mapping:
         value = [key["doc_type"]]
         props.append(value)
-    print("Props" + props)
+    print("Props" + str(props))
     # for i in range(len(props)):
 
     type_prop_map = map_all_ES_index_props(value)
