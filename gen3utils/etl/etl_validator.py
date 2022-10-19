@@ -23,11 +23,13 @@ class Index:
         self.props = {id_name: Prop(id_name)}
 
 
-def validate_joining_list_props(props_list, recorded_errors, existing_indices):
+def validate_joining_list_props(index_name, props_list, recorded_errors, existing_indices):
     if type(props_list) is list:
         for prop in props_list:
             if "index" in prop and "join_on" in prop:
                 for real_prop in prop.get("props"):
+                    if real_prop.get("name") in existing_indices.get(index_name).props:
+                        recorded_errors.append(PropertiesError(f"{real_prop} is duplicated"))
                     validate_joining_prop(
                         real_prop,
                         recorded_errors,
@@ -42,13 +44,15 @@ def validate_list_props(
     recorded_errors,
     grouping_path,
     index,
+    checked_props,
     nodes_for_category=None,
 ):
     if not nodes_for_category:
         nodes_for_category = []
-
     if type(props_list) is list:
         for prop in props_list:
+            if "name" in prop and prop.get("name") in checked_props:
+                recorded_errors.append(PropertiesError(f"{prop} is duplicated"))
             if "path" in prop and "props" in prop:  # flatten_props
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
@@ -61,7 +65,7 @@ def validate_list_props(
                     index.props.update({p.name: p for p in new_props})
             elif "index" in prop and "join_on" in prop:  # joining_props
                 # joining_props does not require path (considering it later after having all indices)
-                return
+                continue
             else:
                 new_props = validate_prop(
                     prop,
@@ -345,6 +349,7 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
     labels_to_back_refs, nodes_with_props, categories_to_labels = get_all_nodes(model)
     indices = {}
     for m in mappings.get("mappings"):
+        checked_props = set([])
         index = Index(m.get("doc_type"), underscore)
         indices[index.name] = index
         category = m.get("category")
@@ -370,13 +375,14 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
                 )
                 nodes_for_category = categories_to_labels.get(category, [])
                 validate_list_props(
-                    value,
-                    labels_to_back_refs,
-                    nodes_with_props,
-                    recorded_errors,
-                    root_path,
-                    index,
-                    nodes_for_category,
+                    props_list=value,
+                    labels_to_back_refs=labels_to_back_refs,
+                    nodes_with_props=nodes_with_props,
+                    recorded_errors=recorded_errors,
+                    grouping_path=root_path,
+                    index=index,
+                    checked_props=checked_props,
+                    nodes_for_category=nodes_for_category,
                 )
         if (
             m.get("type") == "aggregator"
@@ -389,7 +395,7 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
 
     for m in mappings.get("mappings"):
         joining_props = m.get("joining_props", [])
-        validate_joining_list_props(joining_props, recorded_errors, indices)
+        validate_joining_list_props(m.get("doc_type"), joining_props, recorded_errors, indices)
     return recorded_errors
 
 
@@ -421,6 +427,8 @@ def validate_mapping(dictionary_url, mapping_file, manifest):
             underscore = True
         elif tube_version >= version.parse("2020.10"):
             underscore = True
+    if tube_version == "master":
+        underscore = True
 
     recorded_errors = check_mapping_format(mappings, [])
     if len(recorded_errors) > 0:
