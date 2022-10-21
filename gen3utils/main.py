@@ -109,6 +109,7 @@ def validate_etl_mapping(etl_mapping_file, manifest_file):
     logger.info("Validating ETL mapping {}".format(etl_mapping_file))
     with open(manifest_file, "r") as f1:
         manifest = json.loads(f1.read())
+        print("#### Manifest: " + manifest)
         dictionary_url = manifest.get("global", {}).get("dictionary_url")
         if dictionary_url is None:
             logger.error("No dictionary URL in manifest {}".format(manifest_file))
