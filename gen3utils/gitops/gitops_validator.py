@@ -377,7 +377,7 @@ def map_all_ES_index_props(mapping):
                         )
 
         all_prop_map[index.get("doc_type")] = set(index_props)
-        print("#######Props:  " + all_prop_map)
+        print("#######Props:  " + str(all_prop_map))
     return all_prop_map
 
 
