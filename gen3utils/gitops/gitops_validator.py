@@ -309,8 +309,12 @@ def validate_against_etl(gitops, mapping_file):
     with open(mapping_file) as f:
         mappings = yaml.safe_load(f)
     mapping = mappings.get("mappings")
-    print("Mapping: " + str(mapping))
-
+    print("Mapping: " + str(mapping[0]))
+    for key in mapping:
+        value = [key["doc_type"]]
+    print("Values: " + str(value))
+    doc_length = len(value)
+    print(doc_length)
     type_prop_map = map_all_ES_index_props(mapping)
     errors = validate_explorerConfig(gitops, type_prop_map, [])
     studyviewer = gitops.get("studyViewerConfig")
@@ -333,51 +337,53 @@ def map_all_ES_index_props(mapping):
         A mapping between each index type and all it's properties
     """
     all_prop_map = {}
-    # for index in mapping:
-    index_props = []
-    props = index.get("props")
-    print("###props: " + str(props))
-    index_props.extend(_extract_props(props))
-    print("###index_props: " + str(index_props))
-    agg_props = index.get("aggregated_props")
-    print("###agg_props: " + str(agg_props))
-    index_props.extend(_extract_props(agg_props))
-    print("###index_props: " + str(index_props))
-    join_props = index.get("joining_props", [])
-    for indx in join_props:
-        index_props.extend(_extract_props(indx.get("props")))
-    inject_props = index.get("injecting_props", {})
-    for node, props in inject_props.items():
-        index_props.extend(_extract_props(props.get("props")))
-    flat_props = index.get("flatten_props", [])
-    for node in flat_props:
-        index_props.extend(_extract_props(node.get("props")))
-    parent_props = index.get("parent_props")
-    if parent_props:
-        for prop in parent_props:
-            # handle format "node1[id].node2[id]":
-            path_items = prop.get("path").split(".")
-            if "_ANY" in path_items:
-                path_items.remove("_ANY")
-            # get the edge name and the property definition from line:
-            # subjects[subject_id:id,project_id]
-            for item in path_items:
-                [_, str_props] = (
-                    list(filter(None, re.split(r"[\[\]]", item)))
-                    if "[" in item
-                    else [item, None]
-                )
-                if str_props is not None:
-                    props = str_props.split(",")
-                    index_props.extend(
-                        [
-                            p.split(":")[0].strip() if p.find(":") != -1 else p.strip()
-                            for p in props
-                        ]
+    for index in mapping:
+        index_props = []
+        props = index.get("props")
+        print("###props: " + str(props))
+        index_props.extend(_extract_props(props))
+        print("###index_props: " + str(index_props))
+        agg_props = index.get("aggregated_props")
+        print("###agg_props: " + str(agg_props))
+        index_props.extend(_extract_props(agg_props))
+        print("###index_props: " + str(index_props))
+        join_props = index.get("joining_props", [])
+        for indx in join_props:
+            index_props.extend(_extract_props(indx.get("props")))
+        inject_props = index.get("injecting_props", {})
+        for node, props in inject_props.items():
+            index_props.extend(_extract_props(props.get("props")))
+        flat_props = index.get("flatten_props", [])
+        for node in flat_props:
+            index_props.extend(_extract_props(node.get("props")))
+        parent_props = index.get("parent_props")
+        if parent_props:
+            for prop in parent_props:
+                # handle format "node1[id].node2[id]":
+                path_items = prop.get("path").split(".")
+                if "_ANY" in path_items:
+                    path_items.remove("_ANY")
+                # get the edge name and the property definition from line:
+                # subjects[subject_id:id,project_id]
+                for item in path_items:
+                    [_, str_props] = (
+                        list(filter(None, re.split(r"[\[\]]", item)))
+                        if "[" in item
+                        else [item, None]
                     )
+                    if str_props is not None:
+                        props = str_props.split(",")
+                        index_props.extend(
+                            [
+                                p.split(":")[0].strip()
+                                if p.find(":") != -1
+                                else p.strip()
+                                for p in props
+                            ]
+                        )
 
-    all_prop_map[index.get("doc_type")] = set(index_props)
-    print("#######Props:  " + str(all_prop_map))
+        all_prop_map[index.get("doc_type")] = set(index_props)
+        print("#######Props:  " + str(all_prop_map))
     return all_prop_map
 
 
