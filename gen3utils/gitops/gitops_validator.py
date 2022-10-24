@@ -310,10 +310,12 @@ def validate_against_etl(gitops, mapping_file):
         mappings = yaml.safe_load(f)
     mapping = mappings.get("mappings")
     print("Mapping: " + str(mapping[0]))
+    doc_type_values = []
     for key in mapping:
         value = [key["doc_type"]]
-    print("Values: " + str(value))
-    doc_length = len(value)
+        doc_type_values.append(value)
+    print("Values: " + str(doc_type_values))
+    doc_length = len(doc_type_values)
     print(doc_length)
     type_prop_map = map_all_ES_index_props(mapping)
     errors = validate_explorerConfig(gitops, type_prop_map, [])
