@@ -33,7 +33,7 @@ def validate_joining_list_props(
                     if real_prop.get("name") in existing_indices.get(index_name).props:
                         recorded_errors.append(
                             PropertiesError(
-                                f"'{real_prop}' in index '{index_name}' is duplicated"
+                                f"'{real_prop['name']}' in index '{index_name}' is duplicated"
                             )
                         )
                     print(f"Existing indices {existing_indices}")

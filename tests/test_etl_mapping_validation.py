@@ -35,6 +35,14 @@ def test_duplicated_fail_validation(
     )
     print_errors(errors)
     assert len(errors) == 2
+    str_errors = [str(e) for e in errors]
+    assert (
+        "Properties error: 'project_id' in index 'subject' is duplicated" in str_errors
+    )
+    assert (
+        "Properties error: 'study_objective' in index 'subject' is duplicated"
+        in str_errors
+    )
 
 
 def test_fail_validation(
