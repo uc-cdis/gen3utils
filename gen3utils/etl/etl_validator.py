@@ -36,7 +36,6 @@ def validate_joining_list_props(
                                 f"'{real_prop['name']}' in index '{index_name}' is duplicated"
                             )
                         )
-                    print(f"Existing indices {existing_indices}")
                     validate_joining_prop(
                         real_prop,
                         recorded_errors,
@@ -373,7 +372,6 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
         checked_props = set([])
         index = Index(m.get("doc_type"), underscore)
         indices[index.name] = index
-        print(f"Add index {index.name} into indices")
         category = m.get("category")
         node_name = m.get("root")
         for key, value in m.items():
