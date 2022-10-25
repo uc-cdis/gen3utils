@@ -108,6 +108,13 @@ def validate_list_props(
                         labels_to_back_refs.get(k),
                     )
                     index.props.update({p.name: p for p in new_props})
+                    for n_prop in new_props:
+                        if n_prop.name in checked_props:
+                            recorded_errors.append(
+                                PropertiesError(
+                                    f"'{n_prop.name}' in index '{index.name}' is duplicated"
+                                )
+                            )
                     checked_props.add(prop.get("name"))
 
 
