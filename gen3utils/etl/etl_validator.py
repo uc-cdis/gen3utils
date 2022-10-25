@@ -23,13 +23,20 @@ class Index:
         self.props = {id_name: Prop(id_name)}
 
 
-def validate_joining_list_props(index_name, props_list, recorded_errors, existing_indices):
+def validate_joining_list_props(
+    index_name, props_list, recorded_errors, existing_indices
+):
     if type(props_list) is list:
         for prop in props_list:
             if "index" in prop and "join_on" in prop:
                 for real_prop in prop.get("props"):
                     if real_prop.get("name") in existing_indices.get(index_name).props:
-                        recorded_errors.append(PropertiesError(f"{real_prop} is duplicated"))
+                        recorded_errors.append(
+                            PropertiesError(
+                                f"'{real_prop}' in index '{index_name}' is duplicated"
+                            )
+                        )
+                    print(f"Existing indices {existing_indices}")
                     validate_joining_prop(
                         real_prop,
                         recorded_errors,
@@ -51,8 +58,6 @@ def validate_list_props(
         nodes_for_category = []
     if type(props_list) is list:
         for prop in props_list:
-            if "name" in prop and prop.get("name") in checked_props:
-                recorded_errors.append(PropertiesError(f"{prop} is duplicated"))
             if "path" in prop and "props" in prop:  # flatten_props
                 for real_prop in prop.get("props"):
                     new_props = validate_prop(
@@ -62,6 +67,13 @@ def validate_list_props(
                         recorded_errors,
                         prop.get("path", grouping_path),
                     )
+                    for n_prop in new_props:
+                        if n_prop.name in checked_props:
+                            recorded_errors.append(
+                                PropertiesError(
+                                    f"'{n_prop.name}' in index '{index.name}' is duplicated"
+                                )
+                            )
                     index.props.update({p.name: p for p in new_props})
             elif "index" in prop and "join_on" in prop:  # joining_props
                 # joining_props does not require path (considering it later after having all indices)
@@ -75,7 +87,15 @@ def validate_list_props(
                     grouping_path,
                     nodes_for_category,
                 )
+                for n_prop in new_props:
+                    if n_prop.name in checked_props:
+                        recorded_errors.append(
+                            PropertiesError(
+                                f"'{n_prop.name}' in index '{index.name}' is duplicated"
+                            )
+                        )
                 index.props.update({p.name: p for p in new_props})
+            checked_props.add(prop.get("name"))
             # joining_props which contain join_on and index will be validated after all indices are walked through
     elif type(props_list) is dict:
         for k, v in props_list.items():
@@ -89,6 +109,7 @@ def validate_list_props(
                         labels_to_back_refs.get(k),
                     )
                     index.props.update({p.name: p for p in new_props})
+                    checked_props.add(prop.get("name"))
 
 
 def validate_joining_prop(json_obj, recorded_errors, joining_index):
@@ -352,6 +373,7 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
         checked_props = set([])
         index = Index(m.get("doc_type"), underscore)
         indices[index.name] = index
+        print(f"Add index {index.name} into indices")
         category = m.get("category")
         node_name = m.get("root")
         for key, value in m.items():
@@ -395,7 +417,9 @@ def check_mapping_constraints(mappings, model, recorded_errors, underscore):
 
     for m in mappings.get("mappings"):
         joining_props = m.get("joining_props", [])
-        validate_joining_list_props(m.get("doc_type"), joining_props, recorded_errors, indices)
+        validate_joining_list_props(
+            m.get("doc_type"), joining_props, recorded_errors, indices
+        )
     return recorded_errors
 
 

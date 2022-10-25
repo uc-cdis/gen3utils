@@ -1,0 +1,66 @@
+mappings:
+  - name: tb
+    doc_type: subject
+    type: aggregator
+    root: subject
+    props:
+      - name: submitter_id
+      - name: project_id
+      - name: species
+    parent_props:
+      - path: studies[study_objective,study_submitter_id:submitter_id,project_id]
+    flatten_props:
+      - path: demographics
+        props:
+          - name: gender
+            value_mappings:
+              - female: Female
+              - male: Male
+          - name: race
+          - name: study_center
+            src: country_of_birth
+      - path: diagnoses
+        props:
+          - name: comorbidity_anemia
+        sorted_by: updated_datetime, desc
+    aggregated_props:
+      - name: _follow_ups_count
+        path: follow_ups
+        fn: count
+      - name: genexpert
+        src: genexpert
+        path: summary_mutation_panels
+        fn: set
+    joining_props:
+      - index: file
+        join_on: subject_id
+        props:
+          - name: data_format
+            src: data_format
+            fn: set
+          - name: study_objective
+            src: study_objective
+            fn: set
+  - name: tb_file
+    doc_type: file
+    type: collector
+    root: None
+    category: data_file
+    props:
+      - name: object_id
+      - name: md5sum
+      - name: file_name
+      - name: file_size
+      - name: data_format
+      - name: data_type
+      - name: state
+    injecting_props:
+      subject:
+        props:
+          - name: subject_id
+            src: id
+            fn: set
+          - name: project_id
+      study:
+        props:
+          - name: study_objective

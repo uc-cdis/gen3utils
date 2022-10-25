@@ -23,6 +23,20 @@ def test_pass_validation(
     assert len(errors) == 0
 
 
+def test_duplicated_fail_validation(
+    etl_mapping_validation_dict,
+    etl_mapping_validation_duplication_failed,
+    etl_mapping_validation_manifest,
+):
+    errors = validate_mapping(
+        etl_mapping_validation_dict,
+        etl_mapping_validation_duplication_failed,
+        etl_mapping_validation_manifest,
+    )
+    print_errors(errors)
+    assert len(errors) == 2
+
+
 def test_fail_validation(
     etl_mapping_validation_dict,
     etl_mapping_validation_mapping_failed,

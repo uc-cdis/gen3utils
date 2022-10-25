@@ -39,6 +39,11 @@ def etl_mapping_validation_mapping_failed():
 
 
 @pytest.fixture(scope="session")
+def etl_mapping_validation_duplication_failed():
+    return "tests/data/etlMapping_duplicate_field_error.yaml"
+
+
+@pytest.fixture(scope="session")
 def etl_mapping_validation_format_failed():
     return "tests/data/etlMapping_format_error.yaml"
 
