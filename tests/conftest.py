@@ -1,7 +1,10 @@
 import os
 import pytest
+from unittest.mock import MagicMock
 import yaml
 import json
+
+import mock
 
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -19,7 +22,7 @@ def manifest_validation_config():
 
 @pytest.fixture(scope="session")
 def etl_mapping_validation_dict():
-    return "https://s3.amazonaws.com/dictionary-artifacts/tb-datadictionary/1.1.5/schema.json"
+    return "https://s3.amazonaws.com/my-bucket/test-tb-dictionary/1.0/schema.json"
 
 
 @pytest.fixture(scope="session")
@@ -100,3 +103,31 @@ def gitops_etl_mapping():
     with open("tests/data/etlMapping_gitops.yaml", "r") as f:
         data = yaml.safe_load(f.read())
     return data
+
+
+@pytest.fixture(autouse=True)
+def mock_dictionary_requests():
+    def _mock_request(url, **kwargs):
+        import requests
+
+        mocked_response = MagicMock(requests.Response)
+        mocked_response.status_code = 200
+        data = {}
+        if (
+            url
+            == "https://s3.amazonaws.com/my-bucket/test-tb-dictionary/1.0/schema.json"
+        ):
+            with open("tests/data/schema_tb.json", "r") as f:
+                data = f.read()
+        elif (
+            url
+            == "https://s3.amazonaws.com/my-bucket/test-covid-dictionary/2.0/schema.json"
+        ):
+            with open("tests/data/schema_covid.json", "r") as f:
+                data = f.read()
+        mocked_response.text = data
+        return mocked_response
+
+    mock.patch(
+        "dictionaryutils.requests.get", MagicMock(side_effect=_mock_request)
+    ).start()
