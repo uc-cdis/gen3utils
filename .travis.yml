@@ -8,7 +8,6 @@ env:
 install:
 - pip install poetry
 - poetry install -vv --no-interaction
-- poetry show -vv
 script:
 - poetry run pytest -vv ./tests
 before_deploy:
