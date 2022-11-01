@@ -1,5 +1,6 @@
 import os
 import pytest
+import requests
 from unittest.mock import MagicMock
 import yaml
 import json
@@ -78,8 +79,6 @@ def gitops_etl_mapping():
 @pytest.fixture(autouse=True)
 def mock_dictionary_requests():
     def _mock_request(url, **kwargs):
-        import requests
-
         mocked_response = MagicMock(requests.Response)
         mocked_response.status_code = 200
         data = {}
