@@ -12,7 +12,7 @@ from gen3utils.gitops.gitops_validator import (
     validate_gitops_syntax,
 )
 
-data_dict = "https://s3.amazonaws.com/dictionary-artifacts/covid19-datadictionary/3.8.1/schema.json"
+data_dict = "https://s3.amazonaws.com/my-bucket/test-covid-dictionary/2.0/schema.json"
 etlMapping = "tests/data/etlMapping_gitops.yaml"
 
 
