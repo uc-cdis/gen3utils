@@ -1,0 +1,23 @@
+{
+  "explorerConfig": [
+    {
+      "tabTitle": "Explorer tab",
+      "charts": {
+        "field_not_in_etl_mapping": {
+          "chartType": "bar",
+          "title": "Bar chart"
+        }
+      },
+      "filters": {
+        "tabs": []
+      },
+      "table": {
+        "enabled": true,
+        "fields": []
+      },
+      "guppyConfig": {
+        "dataType": "subject"
+      }
+    }
+  ]
+}

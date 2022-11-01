@@ -1,4 +1,6 @@
+import json
 import pytest
+
 from gen3utils.errors import FieldError
 from gen3utils.gitops.gitops_validator import (
     check_field_value,
@@ -11,6 +13,7 @@ from gen3utils.gitops.gitops_validator import (
     validate_studyViewerConfig,
     validate_gitops_syntax,
 )
+from tests.utils import print_errors
 
 data_dict = "https://s3.amazonaws.com/my-bucket/test-covid-dictionary/2.0/schema.json"
 etlMapping = "tests/data/etlMapping_gitops.yaml"
@@ -154,3 +157,15 @@ def test_val_gitops():
 def test_validate_syntax(gitops_json_syntax_error):
     ok = validate_gitops_syntax(gitops_json_syntax_error)
     assert not ok
+
+
+def test_validate_explorer_charts():
+    with open("tests/data/gitops_chart_error.json", "r") as f:
+        gitops_json = json.loads(f.read())
+    errors = validate_against_etl(gitops_json, "tests/data/etlMapping.yaml")
+    print_errors(errors)
+    assert len(errors) == 1
+    assert (
+        str(errors[0])
+        == "Field error: Field [field_not_in_etl_mapping] in explorerConfig.charts not found in etlMapping"
+    )
