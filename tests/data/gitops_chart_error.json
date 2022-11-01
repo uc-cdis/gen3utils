@@ -1,4 +1,18 @@
 {
+  "graphql": {
+    "boardCounts": [],
+    "chartCounts": []
+  },
+  "components": {
+    "index": {
+      "homepageChartNodes": [
+        {
+          "node": "node_not_in_dictionary",
+          "name": "Total records"
+        }
+      ]
+    }
+  },
   "explorerConfig": [
     {
       "tabTitle": "Explorer tab",

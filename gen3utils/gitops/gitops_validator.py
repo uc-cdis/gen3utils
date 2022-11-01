@@ -419,7 +419,9 @@ def validate_against_dictionary(gitops, data_dictionary):
             "Node: {} in graphql.chartCounts not found in dictionary".format(node),
         )
 
-    for item in graphql.get("homepageChartNodes", []):
+    for item in (
+        gitops.get("components", {}).get("index", {}).get("homepageChartNodes", [])
+    ):
         node = item["node"]
         ok = ok and assert_and_log(
             schema.get(node) is not None,

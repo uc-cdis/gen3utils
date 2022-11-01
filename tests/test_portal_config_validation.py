@@ -169,3 +169,13 @@ def test_validate_explorer_charts():
         str(errors[0])
         == "Field error: Field [field_not_in_etl_mapping] in explorerConfig.charts not found in etlMapping"
     )
+
+
+def test_validate_homecharts():
+    with open("tests/data/gitops_chart_error.json", "r") as f:
+        gitops_json = json.loads(f.read())
+    ok = validate_against_dictionary(
+        gitops_json,
+        "https://s3.amazonaws.com/my-bucket/test-tb-dictionary/1.0/schema.json",
+    )
+    assert not ok
