@@ -1,14 +1,12 @@
 import re
 import yaml
 import json
-import os
 
 from cdislogging import get_logger
 
 from gen3utils.assertion import assert_and_log
 from gen3utils.etl.dd_utils import init_dictionary
 from gen3utils.errors import FieldSyntaxError, FieldError
-from gen3utils.deployment_changes.generate_comment import submit_comment
 
 
 logger = get_logger("validate-portal-config", log_level="info")
@@ -164,6 +162,8 @@ def check_required_fields(path, checks, field, ok):
 
 
 def check_field_value(path, checks, accepted_values, errors):
+    if not isinstance(checks, list):
+        checks = [checks]
     for check in checks:
         if check not in accepted_values:
             errors.append(
@@ -235,7 +235,6 @@ def validate_studyViewerConfig(studyviewer, type_prop_map, errors):
 
 
 def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
-
     datatype = explorer_config["guppyConfig"]["dataType"]
     props = type_prop_map.get(datatype, [])
     if not props:
@@ -258,6 +257,9 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
         check_field_value(
             "explorerConfig.table.fields", table.get("fields", []), props, errors
         )
+
+    for chart_field in explorer_config["charts"]:
+        check_field_value("explorerConfig.charts", chart_field, props, errors)
 
     manifest_map = explorer_config.get("manifestMapping")
     if manifest_map and manifest_map.get("resourceIndexType"):
@@ -417,7 +419,9 @@ def validate_against_dictionary(gitops, data_dictionary):
             "Node: {} in graphql.chartCounts not found in dictionary".format(node),
         )
 
-    for item in graphql.get("homepageChartNodes", []):
+    for item in (
+        gitops.get("components", {}).get("index", {}).get("homepageChartNodes", [])
+    ):
         node = item["node"]
         ok = ok and assert_and_log(
             schema.get(node) is not None,

@@ -33,7 +33,7 @@
           "name": "Locations"
         },
         {
-          "node": "summary_report",
+          "node": "statistical_summary_report",
           "name": "Summary Reports"
         },
         {

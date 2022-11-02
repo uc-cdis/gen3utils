@@ -1,10 +1,6 @@
 from gen3utils.etl.etl_validator import validate_mapping
 
-
-def print_errors(errors):
-    print("Recorded errors:")
-    for e in errors:
-        print(f"- {e}")
+from tests.utils import print_errors
 
 
 def test_pass_validation(
