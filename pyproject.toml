@@ -23,7 +23,6 @@ packaging = "~20.0"
 psqlgraph = "~3.0"
 pyyaml = "~5.4"
 six = "~1.12.0"
-#urllib3 = "^1.26.0"
 
 # optional dependencies
 # TODO fix aiobotocore/s3log:
