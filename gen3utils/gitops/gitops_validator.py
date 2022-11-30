@@ -258,7 +258,7 @@ def _validate_explorerConfig_helper(explorer_config, type_prop_map, errors):
             "explorerConfig.table.fields", table.get("fields", []), props, errors
         )
 
-    for chart_field in explorer_config["charts"]:
+    for chart_field in explorer_config.get("charts", []):
         check_field_value("explorerConfig.charts", chart_field, props, errors)
 
     manifest_map = explorer_config.get("manifestMapping")
