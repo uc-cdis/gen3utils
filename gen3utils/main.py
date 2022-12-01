@@ -71,7 +71,7 @@ def validate_portal_config(
 
     if not ok:
         raise AssertionError(
-            "Portal configuration mapping validation failed. See errors in previous logs."
+            "Portal configuration validation failed. See errors in previous logs."
         )
     else:
         logger.info("  OK!")
