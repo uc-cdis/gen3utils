@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gen3utils"
-version = "0.8.3"
+version = "0.8.4"
 description = "Gen3 Library Template"
 authors = ["CTDS UChicago <cdis@uchicago.edu>"]
 license = "Apache-2.0"
@@ -18,7 +18,7 @@ click = "*"
 dictionaryutils = "~3.0.0"
 gen3datamodel = "~3.0.0"
 gen3dictionary = "~2.0.1"
-gen3git = ">=0.3.10,<1.0.0"
+gen3git = ">=0.7.0,<1.0.0"
 packaging = "~20.0"
 psqlgraph = "~3.0"
 pyyaml = "~5.4"
