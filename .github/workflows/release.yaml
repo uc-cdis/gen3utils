@@ -9,7 +9,9 @@ jobs:
   build-and-run:
     name: Build and Run
     runs-on: ubuntu-latest
-    if: contains( github.event.pull_request.labels.*.name, 'release')
+    if: |
+        contains( github.event.pull_request.labels.*.name, 'release')
+        && github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v1
       - name: 'Get Previous tag'
