@@ -31,8 +31,8 @@ IGNORED_SERVICES = [
     "nb2",
     "access-backend",
     "acronymbot",
-    "cedar-wrapper-service",
-    "kayako-wrapper-service",
+    "cedar-wrapper",
+    "kayako-wrapper",
 ]
 
 # update this config if the service name in the manifest "versions"
