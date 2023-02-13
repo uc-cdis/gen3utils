@@ -99,7 +99,7 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
         logger.info("- {}".format(file_info["filename"]))
         url = file_info["raw_url"]
         old_file, new_file = get_files(get_master_url(url), url, headers)
-        new_versions_block = new_file.get("versions", {})
+        new_versions_block = get_versions_dict(new_file)
         new_is_nde_portal = "data-ecosystem-portal" in new_versions_block.get(
             "portal", ""
         )
@@ -108,7 +108,7 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
             new_versions_block.pop(service_name, None)
 
         if old_file:
-            old_versions_block = old_file.get("versions", {})
+            old_versions_block = get_versions_dict(old_file)
             for service_name in IGNORED_SERVICES:
                 old_versions_block.pop(service_name, None)
 
@@ -180,6 +180,26 @@ def get_files(master_url, pr_url, headers):
     old_file = None if old_res.status_code == 404 else old_res.json()
     new_file = new_res.json()
     return old_file, new_file
+
+
+def get_versions_dict(manifest):
+    versions = manifest.get("versions", {})
+    for ssj_name, ssj_image in (
+        manifest.get("ssjdispatcher", {}).get("job_images", {}).items()
+    ):
+        versions[f"ssjdispatcher.job_images.{ssj_name}"] = ssj_image
+    for sower_job in manifest.get("sower", []):
+        container = sower_job.get("container", {})
+        image = container.get("image")
+        if image:
+            versions[f"sower.container.image.{sower_job.get('name')}"] = image
+    for jupyter_container in manifest.get("jupyterhub", {}).get("containers"):
+        image = jupyter_container.get("image")
+        if image:
+            versions[
+                f"jupyterhub.containers.image.{jupyter_container.get('name')}"
+            ] = image
+    return versions
 
 
 def compare_versions_blocks(old_versions_block, new_versions_block, check_portal):

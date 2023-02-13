@@ -49,7 +49,6 @@ def test_check_field_value():
 
 
 def test_validate_explorerConfig(gitops_json, etl_prop_type_map):
-
     errors = validate_explorerConfig(gitops_json, etl_prop_type_map, [])
     assert errors == [
         FieldError(

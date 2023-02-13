@@ -197,7 +197,6 @@ def versions_validation(manifest_versions, versions_requirements):
     ok = True
 
     for versions_requirement in versions_requirements:
-
         requirement_list = versions_requirement["needs"]
         requirement_key_list = list(requirement_list.keys())
         requirement_key = list(versions_requirement)[0]
@@ -206,7 +205,6 @@ def versions_validation(manifest_versions, versions_requirements):
         if requirement_key in manifest_versions and not version_is_branch(
             actual_version
         ):
-
             required_version = versions_requirement[requirement_key]
 
             # If the first service set to * under validation_config versions, other services should be in the manifest
