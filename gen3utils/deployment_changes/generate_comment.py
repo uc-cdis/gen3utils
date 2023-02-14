@@ -56,8 +56,8 @@ SERVICE_TO_REPO = {
     "metadata-delete-expired-objects": "sower-jobs",
     "ssjdispatcher.job_images.indexing": "indexs3client",
     "_regex": {
-        "^sower\..*\.pelican-.*$": "pelican",
-        "^sower\..*\.(?:manifest-indexing|download-indexd-manifest|manifest-merging|metadata-manifest-ingestion|get-dbgap-metadata|batch-export|metadata-delete-expired-objects)$": "sower-jobs",
+        r"^sower\..*\.pelican-.*$": "pelican",
+        r"^sower\..*\.(?:manifest-indexing|download-indexd-manifest|manifest-merging|metadata-manifest-ingestion|get-dbgap-metadata|batch-export|metadata-delete-expired-objects)$": "sower-jobs",
     },
 }
 
@@ -381,7 +381,7 @@ def update_pr_links(repo_name, notes_list):
     in each release note.
     """
     result = []
-    matcher = re.compile(".*\(#(?P<pr_number>[0-9]+)\)$")
+    matcher = re.compile(r".*\(#(?P<pr_number>[0-9]+)\)$")
     # e.g. gets the PR number ("12") from "some description (#12)"
     for note in notes_list:
         match = matcher.match(note)
