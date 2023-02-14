@@ -195,6 +195,8 @@ def get_versions_dict(manifest):
 
     Example:
     { "fence": "quay.io/cdis/fence:1.0.0",  "ssjdispatcher.job_images.indexing": "quay.io/cdis/ssjdispatcher:2.0.0" }
+
+    TODO: check the `manifests/hatchery/hatchery.json` file or `manifest.json->hatchery` section
     """
     versions = manifest.get("versions", {})
     for ssj_name, ssj_image in (
