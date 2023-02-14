@@ -4,6 +4,7 @@ from gen3utils.deployment_changes.generate_comment import (
     get_versions_dict,
     compare_versions_blocks,
     check_services_on_branch,
+    get_repo_name,
     get_downgraded_services,
 )
 
@@ -142,3 +143,23 @@ def test_get_versions_dict():
         "sower.container.image.pelican-export": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/pelican-export:2023.02",
         "sower.container.image.manifest-indexing": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/manifest-indexing:2023.02",
     }
+
+
+def test_get_repo_name():
+    # repo without special handling
+    assert get_repo_name("fence") == "uc-cdis/fence"
+    assert get_repo_name("ssjdispatcher.job_images.indexing") == "uc-cdis/indexs3client"
+
+    # NDE repo special handling
+    assert (
+        get_repo_name("portal", is_nde_portal=True) == "uc-cdis/data-ecosystem-portal"
+    )
+
+    # repo that is in SERVICE_TO_REPO without a regex
+    assert get_repo_name("dashboard") == "uc-cdis/gen3-statics"
+
+    # repo that is in SERVICE_TO_REPO with a regex
+    assert get_repo_name("sower.container.image.pelican-export") == "uc-cdis/pelican"
+    assert (
+        get_repo_name("sower.container.image.manifest-indexing") == "uc-cdis/sower-jobs"
+    )
