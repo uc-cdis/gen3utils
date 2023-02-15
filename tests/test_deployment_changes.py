@@ -1,8 +1,10 @@
 import os
 
 from gen3utils.deployment_changes.generate_comment import (
+    get_versions_dict,
     compare_versions_blocks,
     check_services_on_branch,
+    get_repo_name,
     get_downgraded_services,
 )
 
@@ -78,3 +80,86 @@ def test_downgraded_services():
     downgraded_services = get_downgraded_services(compared_versions)
     expected = ["downgraded-semver", "downgraded-monthly"]
     assert sorted(downgraded_services) == sorted(expected)
+
+
+def test_get_versions_dict():
+    manifest_contents = {
+        "notes": ["some note"],
+        "versions": {
+            "audit-service": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/audit-service:2023.02",
+            "ambassador": "quay.io/datawire/ambassador:1.4.2",
+        },
+        "global": {
+            "hostname": "data.commons.example",
+            "useryaml_s3path": "s3://cdis-gen3-users/covid19/user.yaml",
+        },
+        "ssjdispatcher": {
+            "job_images": {
+                "indexing": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/indexs3client:2023.02"
+            }
+        },
+        "jupyterhub": {
+            "enabled": "yes",
+            "containers": [
+                {
+                    "name": "Bioinfo",
+                    "cpu": 1,
+                    "memory": "1024M",
+                    "image": "quay.io/a/b:1.9.0",
+                },
+                {
+                    "name": "Demo",
+                    "cpu": 1,
+                    "memory": "1024M",
+                    "image": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/c/d:1d33030cef16",
+                },
+            ],
+        },
+        "sower": [
+            {
+                "name": "pelican-export",
+                "action": "export",
+                "container": {
+                    "name": "job-task",
+                    "image": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/pelican-export:2023.02",
+                },
+            },
+            {
+                "name": "manifest-indexing",
+                "action": "index-object-manifest",
+                "container": {
+                    "name": "manifest-indexing-job",
+                    "image": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/manifest-indexing:2023.02",
+                },
+            },
+        ],
+    }
+    assert get_versions_dict(manifest_contents) == {
+        "audit-service": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/audit-service:2023.02",
+        "ambassador": "quay.io/datawire/ambassador:1.4.2",
+        "ssjdispatcher.job_images.indexing": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/indexs3client:2023.02",
+        "jupyterhub.containers.image.Bioinfo": "quay.io/a/b:1.9.0",
+        "jupyterhub.containers.image.Demo": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/c/d:1d33030cef16",
+        "sower.container.image.pelican-export": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/pelican-export:2023.02",
+        "sower.container.image.manifest-indexing": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/manifest-indexing:2023.02",
+    }
+
+
+def test_get_repo_name():
+    # repo without special handling
+    assert get_repo_name("fence") == "uc-cdis/fence"
+    assert get_repo_name("ssjdispatcher.job_images.indexing") == "uc-cdis/indexs3client"
+
+    # NDE repo special handling
+    assert (
+        get_repo_name("portal", is_nde_portal=True) == "uc-cdis/data-ecosystem-portal"
+    )
+
+    # repo that is in SERVICE_TO_REPO without a regex
+    assert get_repo_name("dashboard") == "uc-cdis/gen3-statics"
+
+    # repo that is in SERVICE_TO_REPO with a regex
+    assert get_repo_name("sower.container.image.pelican-export") == "uc-cdis/pelican"
+    assert (
+        get_repo_name("sower.container.image.manifest-indexing") == "uc-cdis/sower-jobs"
+    )
