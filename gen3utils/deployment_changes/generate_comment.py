@@ -207,7 +207,8 @@ def get_versions_dict(manifest):
         container = sower_job.get("container", {})
         image = container.get("image")
         if image:
-            versions[f"sower.container.image.{sower_job.get('name')}"] = image
+            name = image.split("/")[-1].split(":")[0]
+            versions[f"sower.container.image.{name}"] = image
     for jupyter_container in manifest.get("jupyterhub", {}).get("containers", []):
         image = jupyter_container.get("image")
         if image:

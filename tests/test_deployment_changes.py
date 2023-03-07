@@ -117,16 +117,16 @@ def test_get_versions_dict():
         },
         "sower": [
             {
-                "name": "pelican-export",
-                "action": "export",
+                "name": "my-pelican-export",
+                "action": "my-export",
                 "container": {
                     "name": "job-task",
                     "image": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/pelican-export:2023.02",
                 },
             },
             {
-                "name": "manifest-indexing",
-                "action": "index-object-manifest",
+                "name": "my-manifest-indexing",
+                "action": "my-index-object-manifest",
                 "container": {
                     "name": "manifest-indexing-job",
                     "image": "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/manifest-indexing:2023.02",
