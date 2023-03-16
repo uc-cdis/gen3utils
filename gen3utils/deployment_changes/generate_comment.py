@@ -33,6 +33,7 @@ IGNORED_SERVICES = [
     "acronymbot",
     "cedar-wrapper",
     "kayako-wrapper",
+    "frontend-framework",
 ]
 
 # update this config if the service name in the manifest "versions"
