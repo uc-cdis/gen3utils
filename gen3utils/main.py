@@ -59,15 +59,22 @@ def validate_portal_config(
             if not "GITHUB_TOKEN" in os.environ:
                 logger.warning("Missing GITHUB_TOKEN: not commenting on pull request.")
             else:
-                message_header = (
-                    "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(hostname)
-                )
-                comment_on_pr(
-                    repository,
-                    pull_request_number,
-                    message_header,
-                    recorded_errors,
-                )
+                try:
+                    message_header = (
+                        "{}\n :x: etlMapping.yaml - gitops.json mismatch".format(
+                            hostname
+                        )
+                    )
+                    comment_on_pr(
+                        repository,
+                        pull_request_number,
+                        message_header,
+                        recorded_errors,
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"Unable to comment on pull request - continuing. Details: {e}"
+                    )
 
     if not ok:
         raise AssertionError(
