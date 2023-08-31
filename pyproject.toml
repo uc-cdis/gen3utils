@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gen3utils"
 version = "0.9.3"
-description = "Gen3 Library Template"
+description = "Utils for Gen3 Commons management"
 authors = ["CTDS UChicago <cdis@uchicago.edu>"]
 license = "Apache-2.0"
 readme = "README.md"
