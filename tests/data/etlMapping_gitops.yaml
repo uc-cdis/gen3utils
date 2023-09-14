@@ -22,6 +22,11 @@ mappings:
         props:
           - name: location
           - name: continent
+    nested_props:
+      - name: imaging_studies
+        path: imaging_studies
+        props:
+          - name: study_modality
   - name: covid19_dataset
     doc_type: dataset
     type: aggregator

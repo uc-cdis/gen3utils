@@ -62,6 +62,7 @@ def etl_prop_type_map():
                 "study_doi",
                 "location",
                 "continent",
+                "imaging_studies.study_modality",
             ]
         ),
         "dataset": set(["code", "name", "program_name"]),
