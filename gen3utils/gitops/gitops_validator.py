@@ -401,6 +401,14 @@ def map_all_ES_index_props(mapping):
                                 for p in props
                             ]
                         )
+        nested_props = index.get("nested_props")
+        if nested_props:
+            for nested_prop in nested_props:
+                prop_list = nested_prop.get("props")
+                if prop_list:
+                    index_props.extend(
+                        _extract_nested_props(nested_prop["name"], prop_list)
+                    )
 
         all_prop_map[index.get("doc_type")] = set(index_props)
 
@@ -411,6 +419,13 @@ def _extract_props(props_to_extract):
     if not props_to_extract:
         return []
     return [p["name"] for p in props_to_extract]
+
+
+def _extract_nested_props(prefix, props_to_extract):
+    prefix = prefix + "."
+    if not props_to_extract:
+        return []
+    return [prefix + p["name"] for p in props_to_extract]
 
 
 def validate_against_dictionary(gitops, data_dictionary):
