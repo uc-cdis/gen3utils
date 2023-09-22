@@ -107,9 +107,7 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
         url = file_info["raw_url"]
         old_file, new_file = get_files(get_master_url(url), url, headers)
         new_versions_block = get_versions_dict(new_file)
-        new_is_nde_portal = "data-ecosystem-portal" in new_versions_block.get(
-            "portal", ""
-        )
+        new_portal_type = get_image_name(new_versions_block.get("portal", ""))
 
         for service_name in IGNORED_SERVICES:
             new_versions_block.pop(service_name, None)
@@ -119,17 +117,15 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
             for service_name in IGNORED_SERVICES:
                 old_versions_block.pop(service_name, None)
 
-            old_is_nde_portal = "data-ecosystem-portal" in old_versions_block.get(
-                "portal", ""
-            )
+            old_portal_type = get_image_name(new_versions_block.get("portal", ""))
             # we only compare portal versions from the same repo
             compared_versions = compare_versions_blocks(
                 old_versions_block,
                 new_versions_block,
-                old_is_nde_portal == new_is_nde_portal,
+                new_portal_type == old_portal_type,
             )
             deployment_changes, breaking_changes = get_important_changes(
-                compared_versions, token, new_is_nde_portal
+                compared_versions, token, new_portal_type
             )
             downgraded_services = get_downgraded_services(compared_versions)
         else:
@@ -267,7 +263,7 @@ def compare_versions_blocks(old_versions_block, new_versions_block, check_portal
     return res
 
 
-def get_important_changes(versions_dict, token, is_nde_portal):
+def get_important_changes(versions_dict, token, portal_type):
     """
     Uses the gen3git utility to get the release notes between the old and new
     versions for each service, and returns the deployment changes and breaking
@@ -303,7 +299,7 @@ def get_important_changes(versions_dict, token, is_nde_portal):
         if not version_is_branch(
             versions["old"], release_tag_are_branches=False
         ) and not version_is_branch(versions["new"], release_tag_are_branches=False):
-            repo_name = get_repo_name(service, is_nde_portal)
+            repo_name = get_repo_name(service, portal_type)
             logger.debug(f"Mapped service/image name '{service}' to repo '{repo_name}'")
             args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
             try:
@@ -326,7 +322,17 @@ def get_important_changes(versions_dict, token, is_nde_portal):
     return deployment_changes, breaking_changes
 
 
-def get_repo_name(service, is_nde_portal=False):
+def get_image_name(version):
+    """
+    input: "707767160287.dkr.ecr.us-east-1.amazonaws.com/gen3/dataguids:1.0.2"
+    output: "dataguids"
+    """
+    image_name = version.split(":")[0]
+    image_name = image_name.split("/")[-1]
+    return image_name
+
+
+def get_repo_name(service, portal_type="data-portal"):
     # by default, assume the code lives in repo uc-cdis/<service name>
     repo_name = SERVICE_TO_REPO.get(service, service)
 
@@ -338,8 +344,11 @@ def get_repo_name(service, is_nde_portal=False):
                 break
 
     # repo names special cases
-    if service == "portal" and is_nde_portal:
-        repo_name = "data-ecosystem-portal"
+    if service == "portal":
+        if portal_type == "data-ecosystem-portal":
+            repo_name = "data-ecosystem-portal"
+        elif portal_type == "dataguids":
+            repo_name = "dataguids.org"
 
     return "uc-cdis/" + repo_name
 
