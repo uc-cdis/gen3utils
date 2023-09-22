@@ -152,7 +152,8 @@ def test_get_repo_name():
 
     # NDE repo special handling
     assert (
-        get_repo_name("portal", is_nde_portal=True) == "uc-cdis/data-ecosystem-portal"
+        get_repo_name("portal", portal_type="data-ecosystem-portal")
+        == "uc-cdis/data-ecosystem-portal"
     )
 
     # repo that is in SERVICE_TO_REPO without a regex

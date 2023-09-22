@@ -332,7 +332,7 @@ def get_image_name(version):
     return image_name
 
 
-def get_repo_name(service, portal_type=False):
+def get_repo_name(service, portal_type="data-portal"):
     # by default, assume the code lives in repo uc-cdis/<service name>
     repo_name = SERVICE_TO_REPO.get(service, service)
 
