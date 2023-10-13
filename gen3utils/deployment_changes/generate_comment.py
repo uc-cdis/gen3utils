@@ -359,6 +359,11 @@ def get_downgraded_services(compared_versions):
     """
     downgraded_services = set()
     for service, versions in compared_versions.items():
+        if version_is_branch(
+            versions["old"], release_tag_are_branches=False
+        ) or version_is_branch(versions["new"], release_tag_are_branches=False):
+            # we can't compare branches
+            continue
         old_is_monthly = version_is_monthly_release(versions["old"])
         new_is_monthly = version_is_monthly_release(versions["new"])
         if old_is_monthly != new_is_monthly:
@@ -376,7 +381,10 @@ def check_services_on_branch(versions_block):
     services_on_branch = []
     for service in versions_block:
         version = versions_block.get(service)
-        if "quay.io/cdis" not in version or len(version.split(":")) < 2:
+        if (
+            "quay.io/cdis" not in version
+            and "dkr.ecr.us-east-1.amazonaws.com" not in version
+        ) or len(version.split(":")) < 2:
             # ignore non-CTDS repos.
             # version without ":" is not usable.
             continue
