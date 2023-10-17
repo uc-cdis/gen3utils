@@ -71,7 +71,7 @@ def test_services_on_branch():
 def test_downgraded_services():
     compared_versions = {
         "upgraded-semver": {"old": "1.0", "new": "2.0.0"},
-        "downgraded-semver": {"old": "3", "new": "2.0.0"},
+        "downgraded-semver": {"old": "3.0", "new": "2.0.0"},
         "upgraded-monthly": {"old": "2022.02", "new": "2022.03"},
         "downgraded-monthly": {"old": "2022.02", "new": "2021.03"},
         "upgraded-mixed": {"old": "2020.03", "new": "3.3.1"},
