@@ -201,7 +201,7 @@ def get_versions_dict(manifest):
     ):
         versions[f"ssjdispatcher.job_images.{ssj_name}"] = ssj_image
     sower_job_object = manifest.get("sower", [])
-    
+
     # Older manifests have sower_job_data as a dictionary
     if type(sower_job_object) is dict:
         sower_job_object = [sower_job_object]
