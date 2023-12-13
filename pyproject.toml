@@ -19,7 +19,7 @@ dictionaryutils = ">=3,<4"
 gen3datamodel = ">=3,<4"
 gen3dictionary = ">=2,<3"
 gen3git = ">=0.7.0,<1.0.0"
-packaging = "~20.0"
+packaging = ">=20,<24"
 psqlgraph = ">=3,<4"
 pyyaml = "<7"
 
