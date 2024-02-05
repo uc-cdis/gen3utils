@@ -346,6 +346,8 @@ def misc_validations(manifest):
             "qa-nde.planx-pla.net",
             "niaiddata.org",
         ]
+        if "jenkins" in manifest["global"]["hostname"]:
+            shouldSkip = True
         if shouldSkip is False and (
             "netpolicy" not in manifest["global"]
             or manifest["global"]["netpolicy"] != "on"
