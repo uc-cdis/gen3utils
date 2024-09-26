@@ -1,7 +1,7 @@
 # gen3utils
 
 Utils for Gen3 commons management. Gen3utils includes a CLI and is intended to be used as an
-external facing with tool for validating configuration.
+external facing tool for validating configuration.
 
 ## Install with pip
 pip install gen3utils
