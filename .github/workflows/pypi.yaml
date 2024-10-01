@@ -11,6 +11,6 @@ jobs:
         PYTHON_VERSION: '3.9'
         # the package was registered under someone's personal test-pypi account, so we
         # can't push there
-        DO_TEST_PUBLISH_FIRST: true
+        DO_TEST_PUBLISH_FIRST: false
     secrets:
       PYPI_PROD_API_TOKEN: ${{ secrets.PYPI_PROD_API_TOKEN }}
