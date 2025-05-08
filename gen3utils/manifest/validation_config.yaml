@@ -6,6 +6,9 @@
 avoid:
   qa-mickey.planx-pla.net:
   - "sower"
+  # no release notes now
+  brhstaging.data-commons.org:
+  - "gen3-discovery-ai"
 
 
 ####################
