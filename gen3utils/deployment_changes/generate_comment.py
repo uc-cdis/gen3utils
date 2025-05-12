@@ -124,7 +124,7 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
                 new_versions_block,
                 new_portal_type == old_portal_type,
             )
-            deployment_changes, breaking_changes = get_important_changes(
+            deployment_changes, breaking_changes, comment_notes = get_important_changes(
                 compared_versions, token, new_portal_type
             )
             downgraded_services = get_downgraded_services(compared_versions)
@@ -133,16 +133,18 @@ def comment_deployment_changes_on_pr(repository, pull_request_number):
             deployment_changes = {}
             breaking_changes = {}
             downgraded_services = {}
+            comment_notes = ""
         contents = generate_comment(
             deployment_changes,
             breaking_changes,
             check_services_on_branch(new_versions_block),
             downgraded_services,
+            comment_notes,
         )
         if contents:
             full_comment += "# {}\n{}".format(file_info["filename"], contents)
     if full_comment:
-        logger.info(full_comment)
+        logger.info(f"Comment:\n{full_comment}")
         submit_comment(full_comment, headers, pr_comments_url)
 
 
@@ -299,6 +301,8 @@ def get_important_changes(versions_dict, token, portal_type):
 
     deployment_changes = {}
     breaking_changes = {}
+    comment_notes = ""
+    release_notes_cache = {}
     for service, versions in versions_dict.items():
         # only get the deployment changes if the new version is more
         # recent than the old version. ignore services on a branch
@@ -307,25 +311,40 @@ def get_important_changes(versions_dict, token, portal_type):
         ) and not version_is_branch(versions["new"], release_tag_are_branches=False):
             repo_name = get_repo_name(service, portal_type)
             logger.debug(f"Mapped service/image name '{service}' to repo '{repo_name}'")
-            args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
-            try:
-                release_notes = gen3git.main(args)
-                if not release_notes:
-                    raise Exception("gen3git did not return release notes")
-            except Exception:
-                logger.error(
-                    "While checking service '{}', repo '{}', unable to get release notes with gen3git:".format(
-                        service, repo_name
+            cache_key = f"{repo_name}_{versions['old']}_{versions['new']}"
+            release_notes = release_notes_cache.get(cache_key)
+            if not release_notes:
+                args = Gen3GitArgs(repo_name, versions["old"], versions["new"])
+                try:
+                    release_notes = gen3git.main(args)
+                    if not release_notes:
+                        raise Exception("gen3git did not return release notes")
+                except requests.exceptions.HTTPError as e:
+                    logger.error(
+                        "While checking service '{}', repo '{}', unable to get release notes with gen3git. Got HTTP error: {}".format(
+                            service, repo_name, e
+                        )
                     )
-                )
-                raise
+                    if e.response.status_code == 429:
+                        comment_notes = ":warning: This check was rate limited! Only returning release notes obtained before reaching the limit. Try setting a GITHUB_TOKEN or lowering the amount of changes in your PR (fewer version changes, or less time difference between versions)."
+                        break
+                    raise
+                except Exception:
+                    logger.error(
+                        "While checking service '{}', repo '{}', unable to get release notes with gen3git:".format(
+                            service, repo_name
+                        )
+                    )
+                    raise
+                release_notes_cache[cache_key] = release_notes
             notes = release_notes.get("deployment changes")
             if notes:
                 deployment_changes[service] = update_pr_links(repo_name, notes)
             notes = release_notes.get("breaking changes")
             if notes:
                 breaking_changes[service] = update_pr_links(repo_name, notes)
-    return deployment_changes, breaking_changes
+
+    return deployment_changes, breaking_changes, comment_notes
 
 
 def get_image_name(version):
@@ -420,12 +439,18 @@ def update_pr_links(repo_name, notes_list):
 
 
 def generate_comment(
-    deployment_changes, breaking_changes, services_on_branch, downgraded_services
+    deployment_changes,
+    breaking_changes,
+    services_on_branch,
+    downgraded_services,
+    comment_notes,
 ):
     # TODO: edit the previous comment instead of posting a new one
     contents = ""
+    if comment_notes:
+        contents += "## {}\n".format(comment_notes)
     if services_on_branch:
-        contents += "## :warning: Services on branch\n- {}\n".format(
+        contents += "## :warning: Services on a branch\n- {}\n".format(
             "\n- ".join(services_on_branch)
         )
     if downgraded_services:
