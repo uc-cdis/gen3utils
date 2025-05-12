@@ -328,6 +328,7 @@ def get_important_changes(versions_dict, token, portal_type):
                     if e.response.status_code == 429:
                         comment_notes = ":warning: This check was rate limited! Only returning release notes obtained before reaching the limit. Try setting a GITHUB_TOKEN or lowering the amount of changes in your PR (fewer version changes, or less time difference between versions)."
                         break
+                    raise
                 except Exception:
                     logger.error(
                         "While checking service '{}', repo '{}', unable to get release notes with gen3git:".format(
