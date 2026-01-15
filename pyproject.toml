@@ -14,6 +14,7 @@ click = ">=8,<9"
 dictionaryutils = "^4"
 gen3datamodel = "^4"
 aiobotocore = "^3.1.0"
+gen3git = ">=0.7.0,<1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6"
