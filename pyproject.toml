@@ -1,39 +1,25 @@
 [tool.poetry]
 name = "gen3utils"
-version = "0.10.8"
+version = "1.0.0"
 description = "Utils for Gen3 Commons management"
 authors = ["CTDS UChicago <cdis@uchicago.edu>"]
 license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/uc-cdis/gen3utils"
-include = [
-  "CHANGELOG.md",
-  "NOTICE",
-]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.13,<4"
 cdislogging = ">=1,<2"
 click = ">=8,<9"
-dictionaryutils = ">=3,<4"
-gen3datamodel = ">=3,<4"
-gen3dictionary = ">=2,<3"
+dictionaryutils = "^4"
+gen3datamodel = "^4"
+aiobotocore = "^3.1.0"
 gen3git = ">=0.7.0,<1.0.0"
-packaging = ">=20,<24"
-psqlgraph = ">=3,<4"
-pyyaml = "<7"
 
-# optional dependencies
-# TODO fix aiobotocore/s3log:
-# - we need aiobotocore<=0.11.1 because `get_session` (used in `s3log`) does not accept the
-#   `loop` parameter in aiobotocore>0.11.1.
-# - we need a more recent aiobotocore to have a more recent urllib3. Older urllib3 is causing
-#   dependency issues with poetry>=1.2.0. We would need to fix `get_session` in the `s3log` code.
-# aiobotocore = { version = "0.11.1", optional = true }
-
-[tool.poetry.dev-dependencies]
-pytest = ">=3.6"
+[tool.poetry.group.dev.dependencies]
+pytest = ">=6"
 mock = "^4.0.3"
+deptry = "^0.23.1"
 
 [tool.poetry.scripts]
 gen3utils = "gen3utils.main:main"
@@ -41,6 +27,3 @@ gen3utils = "gen3utils.main:main"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
-
-[tool.poetry.extras]
-s3log = ["aiobotocore"]  # install with `poetry install -E s3log`

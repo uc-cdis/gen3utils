@@ -8,7 +8,7 @@ jobs:
     name: PyPI Poetry Publish
     uses: uc-cdis/.github/.github/workflows/python_package_index_publish.yaml@master
     with:
-        PYTHON_VERSION: '3.9'
+        PYTHON_VERSION: '3.13'
         # the package was registered under someone's personal test-pypi account, so we
         # can't push there
         DO_TEST_PUBLISH_FIRST: false
